@@ -1,3 +1,4 @@
+import { UserRole } from '@/graphql/enums/user-role.enum';
 import { Field, GraphQLISODateTime, ID, ObjectType } from 'type-graphql';
 
 @ObjectType()
@@ -13,6 +14,9 @@ export class UserModel {
 
   @Field(() => String)
   password!: string;
+
+  @Field(() => UserRole)
+  role!: UserRole;
 
   @Field(() => GraphQLISODateTime)
   createdAt!: Date;

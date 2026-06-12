@@ -1,3 +1,4 @@
+import { AUTH_COOKIE_OPTIONS } from '@/constants/cookies.constants';
 import { CookieOptions, Response } from 'express';
 
 export function setAuthCookies(
@@ -12,13 +13,13 @@ export function setAuthCookies(
     sameSite: isProd ? 'none' : 'lax',
   };
 
-  res.cookie('token', tokens.token, {
+  res.cookie(AUTH_COOKIE_OPTIONS.ACCESS_TOKEN.NAME, tokens.token, {
     ...cookieConfig,
-    maxAge: 15 * 60 * 1000,
+    maxAge: AUTH_COOKIE_OPTIONS.ACCESS_TOKEN.MAX_AGE,
   });
 
-  res.cookie('refreshToken', tokens.refreshToken, {
+  res.cookie(AUTH_COOKIE_OPTIONS.REFRESH_TOKEN.NAME, tokens.refreshToken, {
     ...cookieConfig,
-    maxAge: 24 * 60 * 60 * 1000,
+    maxAge: AUTH_COOKIE_OPTIONS.REFRESH_TOKEN.MAX_AGE,
   });
 }

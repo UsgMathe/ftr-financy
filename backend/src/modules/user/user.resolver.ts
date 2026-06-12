@@ -1,11 +1,10 @@
-import { Arg, Query, Resolver, UseMiddleware } from 'type-graphql';
+import { Arg, Authorized, Mutation, Query, Resolver } from 'type-graphql';
 
-import { IsAuth } from '@/shared/middlewares/is-auth.middleware';
 import { UserModel } from '../auth/models/user.model';
 import { UserService } from './user.service';
 
 @Resolver(() => UserModel)
-@UseMiddleware(IsAuth)
+@Authorized('ADMIN')
 export class UserResolver {
   private userService = new UserService();
 
@@ -17,5 +16,10 @@ export class UserResolver {
   @Query(() => [UserModel])
   async listUsers() {
     return this.userService.listUsers();
+  }
+
+  @Mutation(() => Boolean)
+  async deleteUser(@Arg('id', () => String) id: string) {
+    return this.userService.deleteUser(id);
   }
 }

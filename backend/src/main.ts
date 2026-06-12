@@ -3,13 +3,14 @@ import 'reflect-metadata';
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@as-integrations/express5';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import express from 'express';
 import { buildSchema } from 'type-graphql';
 
-import cors from 'cors';
-import { buildContext } from './graphql/graphql.context';
+import { buildContext, GraphqlContext } from './graphql/graphql.context';
 import { AuthResolver } from './modules/auth/auth.resolver';
 import { UserResolver } from './modules/user/user.resolver';
+import { UnauthorizedError } from './shared/errors/unauthorized.error';
 import { errorHandler } from './shared/middlewares/error-handler.middleware';
 import { env } from './shared/utils/env.utils';
 
@@ -23,6 +24,20 @@ async function main() {
     resolvers: [UserResolver, AuthResolver],
     validate: false,
     emitSchemaFile: './schema.graphql',
+    authChecker: ({ context }: { context: GraphqlContext }, roles: string[]) => {
+      if (!context.user) {
+        throw new UnauthorizedError("Usuário não autenticado!");
+      }
+      if (roles.length === 0) {
+        return true;
+      }
+
+      if (!roles.includes(context.role || '')) {
+        throw new UnauthorizedError("Você não tem permissão para realizar esta ação!");
+      }
+
+      return true;
+    },
   });
 
   const server = new ApolloServer({ schema });

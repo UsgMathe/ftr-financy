@@ -1,44 +1,28 @@
-import { User } from '@/generated/prisma/browser';
-import { prismaClient } from '@/prisma/prisma.client';
-import { ConflictError } from '@/shared/errors/conflict.error';
-import { UnauthorizedError } from '@/shared/errors/unauthorized.error';
-import { comparePassword, hashPassword } from '@/shared/utils/hash.utils';
-import { signJwt } from '@/shared/utils/jwt.utils';
+import { Request, Response } from 'express';
 
+import { AUTH_COOKIE_OPTIONS } from '@/constants/cookies.constants';
+import { User, UserRole } from '@/generated/prisma/browser';
 import { GraphqlContext } from '@/graphql/graphql.context';
+import { UnauthorizedError } from '@/shared/errors/unauthorized.error';
 import { setAuthCookies } from '@/shared/utils/cookies.utils';
+import { comparePassword } from '@/shared/utils/hash.utils';
+import { jwtSign, verifyJwt } from '@/shared/utils/jwt.utils';
+
+import { UserService } from '../user/user.service';
 import { SigninInput } from './dtos/signin.dto';
 import { SignupInput, SignupOutput } from './dtos/signup.dto';
 
 export class AuthService {
-  async signup(data: SignupInput) {
-    const existingUser = await prismaClient.user.findUnique({
-      where: {
-        email: data.email,
-      },
-    });
+  private readonly userService = new UserService();
 
-    if (existingUser) {
-      throw new ConflictError('Email já cadastrado');
-    }
-
-    const user = await prismaClient.user.create({
-      data: {
-        name: data.name,
-        email: data.email,
-        password: await hashPassword(data.password),
-      },
-    });
+  async signup(data: SignupInput): Promise<SignupOutput> {
+    const user = await this.userService.createUser(data);
 
     return this.generateTokens(user);
   }
 
-  async signin(data: SigninInput, { res }: GraphqlContext) {
-    const foundUser = await prismaClient.user.findUnique({
-      where: {
-        email: data.email,
-      },
-    });
+  async signin(data: SigninInput, { res }: GraphqlContext): Promise<SignupOutput> {
+    const foundUser = await this.userService.findByEmail(data.email);
 
     if (!foundUser) throw new UnauthorizedError('Usuário não encontrado');
 
@@ -58,10 +42,69 @@ export class AuthService {
     return tokens;
   }
 
+  async signout(res: Response): Promise<boolean> {
+    res.clearCookie(AUTH_COOKIE_OPTIONS.ACCESS_TOKEN.NAME);
+    res.clearCookie(AUTH_COOKIE_OPTIONS.REFRESH_TOKEN.NAME);
+
+    return true;
+  }
+
   private generateTokens(user: User): SignupOutput {
-    const token = signJwt({ id: user.id, email: user.email }, '15m');
-    const refreshToken = signJwt({ id: user.id, email: user.email }, '1d');
+    const token = jwtSign({ id: user.id, email: user.email, name: user.name, role: user.role }, 'token');
+    const refreshToken = jwtSign({ id: user.id, email: user.email, name: user.name, role: user.role }, 'refreshToken');
 
     return { token, refreshToken, user };
+  }
+
+  async authenticateRequest(req: Request, res: Response) {
+    const authHeader = req.headers.authorization;
+
+    let user: string | undefined;
+    let role: UserRole | undefined;
+
+    let token: string | undefined = req.cookies?.token;
+    if (!token && authHeader?.startsWith('Bearer ')) {
+      token = authHeader.substring('Bearer '.length);
+    }
+
+    let refreshToken: string | undefined = req.cookies?.refreshToken;
+
+    if (token) {
+      try {
+        const payload = verifyJwt(token);
+        user = payload.id;
+        role = payload.role;
+      } catch (error) { }
+    }
+
+    if (!user && refreshToken) {
+      try {
+        const payload = verifyJwt(refreshToken);
+        user = payload.id;
+        role = payload.role;
+
+        token = jwtSign({
+          id: payload.id,
+          email: payload.email,
+          name: payload.name,
+          role: payload.role
+        }, 'token');
+
+        refreshToken = jwtSign({
+          id: payload.id,
+          email: payload.email,
+          name: payload.name,
+          role: payload.role
+        }, 'refreshToken');
+
+        setAuthCookies(res, { token, refreshToken });
+      } catch (error) {
+        res.clearCookie(AUTH_COOKIE_OPTIONS.ACCESS_TOKEN.NAME);
+        res.clearCookie(AUTH_COOKIE_OPTIONS.REFRESH_TOKEN.NAME);
+      }
+    }
+
+
+    return { user, role, token };
   }
 }

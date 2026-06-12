@@ -20,4 +20,9 @@ export class AuthResolver {
   ) {
     return this.authService.signin(data, ctx);
   }
+
+  @Mutation(() => Boolean)
+  async signout(@Ctx() ctx: GraphqlContext) {
+    return this.authService.signout(ctx.res);
+  }
 }
