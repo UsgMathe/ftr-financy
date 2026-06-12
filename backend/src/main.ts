@@ -7,11 +7,9 @@ import cors from 'cors';
 import express from 'express';
 import { buildSchema } from 'type-graphql';
 
-import { formatGraphqlError } from './graphql/format-graphql-error';
 import { buildContext, GraphqlContext } from './graphql/graphql.context';
 import { AuthResolver } from './modules/auth/auth.resolver';
 import { UserResolver } from './modules/user/user.resolver';
-import { ForbiddenError } from './shared/errors/forbidden.error';
 import { UnauthorizedError } from './shared/errors/unauthorized.error';
 import { errorHandler } from './shared/middlewares/error-handler.middleware';
 import { env } from './shared/utils/env.utils';
@@ -32,22 +30,9 @@ async function main() {
       },
     },
     emitSchemaFile: './schema.graphql',
-    authChecker: (
-      { context }: { context: GraphqlContext },
-      roles: string[],
-    ) => {
+    authChecker: ({ context }: { context: GraphqlContext }) => {
       if (!context.user) {
         throw new UnauthorizedError('Usuário não autenticado!');
-      }
-
-      if (roles.length === 0) {
-        return true;
-      }
-
-      if (!roles.includes(context.role || '')) {
-        throw new ForbiddenError(
-          'Você não tem permissão para realizar esta ação!',
-        );
       }
 
       return true;
@@ -58,7 +43,6 @@ async function main() {
     schema,
     introspection: env.NODE_ENV === 'development',
     includeStacktraceInErrorResponses: env.NODE_ENV === 'development',
-    formatError: formatGraphqlError,
   });
 
   await server.start();

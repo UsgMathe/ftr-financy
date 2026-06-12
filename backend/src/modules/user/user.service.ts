@@ -1,10 +1,24 @@
+import { User } from '@/generated/prisma/browser';
 import { prismaClient } from '@/prisma/prisma.client';
+import { ConflictError } from '@/shared/errors/conflict.error';
 import { UnauthorizedError } from '@/shared/errors/unauthorized.error';
 import { hashPassword } from '@/shared/utils/hash.utils';
 import { CreateUserInput } from './dtos/create-user.dto';
-import { ConflictError } from '@/shared/errors/conflict.error';
+import { UpdateUserInput } from './dtos/update-user.dto';
 
 export class UserService {
+  async createUser(data: CreateUserInput) {
+    await this.validateUserExistsByEmail(data.email);
+
+    return prismaClient.user.create({
+      data: {
+        name: data.name,
+        email: data.email,
+        password: await hashPassword(data.password),
+      },
+    });
+  }
+
   async findUser(id: string) {
     return this.validateUserExists(id);
   }
@@ -17,25 +31,24 @@ export class UserService {
     return user;
   }
 
-  async createUser(data: CreateUserInput) {
-    const foundUser = await prismaClient.user.findUnique({
-      where: {
-        email: data.email,
-      },
-    });
+  async listUsers() {
+    return prismaClient.user.findMany();
+  }
 
-    if (foundUser) throw new ConflictError('Este email já está cadastrado');
+  async updateUser(user: User, data: UpdateUserInput) {
+    await this.validateUserExists(user.id);
 
-    return prismaClient.user.create({
+    if (data.email) {
+      await this.validateUserExistsByEmail(data.email);
+    }
+
+    return prismaClient.user.update({
+      where: { id: user.id },
       data: {
         name: data.name,
         email: data.email,
-        password: await hashPassword(data.password),
       },
     });
-  }
-  async listUsers() {
-    return prismaClient.user.findMany();
   }
 
   async deleteUser(id: string) {
@@ -54,6 +67,16 @@ export class UserService {
     });
 
     if (!user) throw new UnauthorizedError('Usuário não encontrado');
+
+    return user;
+  }
+
+  private async validateUserExistsByEmail(email: string) {
+    const user = await prismaClient.user.findUnique({
+      where: { email },
+    });
+
+    if (user) throw new ConflictError('Este email já está cadastrado');
 
     return user;
   }

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 
 import { AUTH_COOKIE_OPTIONS } from '@/constants/cookies.constants';
-import { User, UserRole } from '@/generated/prisma/browser';
+import { User } from '@/generated/prisma/browser';
 import { GraphqlContext } from '@/graphql/graphql.context';
 import { UnauthorizedError } from '@/shared/errors/unauthorized.error';
 import { setAuthCookies } from '@/shared/utils/cookies.utils';
@@ -21,7 +21,10 @@ export class AuthService {
     return this.generateTokens(user);
   }
 
-  async signin(data: SigninInput, { res }: GraphqlContext): Promise<SignupOutput> {
+  async signin(
+    data: SigninInput,
+    { res }: GraphqlContext,
+  ): Promise<SignupOutput> {
     const foundUser = await this.userService.findByEmail(data.email);
 
     if (!foundUser) throw new UnauthorizedError('Usuário não encontrado');
@@ -50,8 +53,14 @@ export class AuthService {
   }
 
   private generateTokens(user: User): SignupOutput {
-    const token = jwtSign({ id: user.id, email: user.email, name: user.name, role: user.role }, 'token');
-    const refreshToken = jwtSign({ id: user.id, email: user.email, name: user.name, role: user.role }, 'refreshToken');
+    const token = jwtSign(
+      { id: user.id, email: user.email, name: user.name },
+      'token',
+    );
+    const refreshToken = jwtSign(
+      { id: user.id, email: user.email, name: user.name },
+      'refreshToken',
+    );
 
     return { token, refreshToken, user };
   }
@@ -60,7 +69,6 @@ export class AuthService {
     const authHeader = req.headers.authorization;
 
     let user: string | undefined;
-    let role: UserRole | undefined;
 
     let token: string | undefined = req.cookies?.token;
     if (!token && authHeader?.startsWith('Bearer ')) {
@@ -73,29 +81,31 @@ export class AuthService {
       try {
         const payload = verifyJwt(token);
         user = payload.id;
-        role = payload.role;
-      } catch (error) { }
+      } catch (error) {}
     }
 
     if (!user && refreshToken) {
       try {
         const payload = verifyJwt(refreshToken);
         user = payload.id;
-        role = payload.role;
 
-        token = jwtSign({
-          id: payload.id,
-          email: payload.email,
-          name: payload.name,
-          role: payload.role
-        }, 'token');
+        token = jwtSign(
+          {
+            id: payload.id,
+            email: payload.email,
+            name: payload.name,
+          },
+          'token',
+        );
 
-        refreshToken = jwtSign({
-          id: payload.id,
-          email: payload.email,
-          name: payload.name,
-          role: payload.role
-        }, 'refreshToken');
+        refreshToken = jwtSign(
+          {
+            id: payload.id,
+            email: payload.email,
+            name: payload.name,
+          },
+          'refreshToken',
+        );
 
         setAuthCookies(res, { token, refreshToken });
       } catch (error) {
@@ -104,7 +114,6 @@ export class AuthService {
       }
     }
 
-
-    return { user, role, token };
+    return { user, token };
   }
 }
