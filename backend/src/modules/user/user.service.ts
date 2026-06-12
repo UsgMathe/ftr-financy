@@ -2,6 +2,7 @@ import { prismaClient } from '@/prisma/prisma.client';
 import { UnauthorizedError } from '@/shared/errors/unauthorized.error';
 import { hashPassword } from '@/shared/utils/hash.utils';
 import { CreateUserInput } from './dtos/create-user.dto';
+import { ConflictError } from '@/shared/errors/conflict.error';
 
 export class UserService {
   async findUser(id: string) {
@@ -23,8 +24,7 @@ export class UserService {
       },
     });
 
-    if (foundUser) throw new Error('Este email já está cadastrado');
-    if (!data.password) throw new Error('Senha é obrigatória');
+    if (foundUser) throw new ConflictError('Este email já está cadastrado');
 
     return prismaClient.user.create({
       data: {

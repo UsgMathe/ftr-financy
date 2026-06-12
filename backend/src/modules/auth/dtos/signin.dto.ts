@@ -1,23 +1,9 @@
-import { Field, InputType, ObjectType } from 'type-graphql';
-import { UserModel } from '../models/user.model';
+import { InputType, ObjectType } from 'type-graphql';
+import { AuthInput } from './auth.input';
+import { AuthOutput } from './auth.output';
 
 @InputType()
-export class SigninInput {
-  @Field(() => String)
-  email!: string;
-
-  @Field(() => String)
-  password!: string;
-}
+export class SigninInput extends AuthInput { }
 
 @ObjectType()
-export class SigninOutput {
-  @Field(() => String)
-  token!: string;
-
-  @Field(() => String)
-  refreshToken!: string;
-
-  @Field(() => UserModel)
-  user!: UserModel;
-}
+export class SigninOutput extends AuthOutput { }

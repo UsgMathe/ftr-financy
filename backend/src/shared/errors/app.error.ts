@@ -1,8 +1,19 @@
-export class AppError extends Error {
+import { GraphQLError } from 'graphql';
+
+export class AppError extends GraphQLError {
   constructor(
     message: string,
-    public readonly statusCode: number,
+    code: string,
+    statusCode: number,
+    extensions?: Record<string, unknown>,
   ) {
-    super(message);
+    super(message, {
+      extensions: {
+        code,
+        statusCode,
+        details: [],
+        ...extensions,
+      },
+    });
   }
 }
