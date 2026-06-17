@@ -3,10 +3,22 @@
 # !!!   DO NOT MODIFY THIS FILE BY YOURSELF   !!!
 # -----------------------------------------------
 
-input CreateUserInput {
-  email: String!
-  name: String!
-  password: String!
+type CategoryModel {
+  color: String!
+  createdAt: DateTimeISO!
+  description: String
+  icon: String!
+  id: ID!
+  title: String!
+  updatedAt: DateTimeISO!
+  user: UserModel!
+}
+
+input CreateCategoryInput {
+  color: String!
+  description: String
+  icon: String!
+  title: String!
 }
 
 """
@@ -15,17 +27,37 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 scalar DateTimeISO
 
 type Mutation {
-  createUser(data: CreateUserInput!): UserModel!
-  deleteUser: Boolean!
+  """Criar uma categoria"""
+  createCategory(data: CreateCategoryInput!): CategoryModel!
+
+  """Deletar uma categoria"""
+  deleteCategory(id: String!): Boolean!
+
+  """Fazer login"""
   signin(data: SigninInput!): SigninOutput!
+
+  """Fazer logout"""
   signout: Boolean!
-  signup(data: SignupInput!): SignupOutput!
+
+  """Criar conta"""
+  signup(data: SignupInput!): UserModel!
+
+  """Atualizar uma categoria"""
+  updateCategory(data: UpdateCategoryInput!, id: String!): CategoryModel!
+
+  """Atualizar dados do usuário"""
   updateUser(data: UpdateUserInput!): UserModel!
 }
 
 type Query {
+  """Buscar uma categoria"""
+  getCategory(id: String!): CategoryModel!
+
+  """Buscar perfil do usuário"""
   getUser: UserModel!
-  listUsers: [UserModel!]!
+
+  """Listar as categorias"""
+  listCategories: [CategoryModel!]!
 }
 
 input SigninInput {
@@ -45,10 +77,11 @@ input SignupInput {
   password: String!
 }
 
-type SignupOutput {
-  refreshToken: String!
-  token: String!
-  user: UserModel!
+input UpdateCategoryInput {
+  color: String
+  description: String
+  icon: String
+  title: String
 }
 
 input UpdateUserInput {
@@ -61,6 +94,5 @@ type UserModel {
   email: String!
   id: ID!
   name: String!
-  password: String!
   updatedAt: DateTimeISO!
 }
