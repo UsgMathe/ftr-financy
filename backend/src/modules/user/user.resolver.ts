@@ -1,41 +1,27 @@
-import { Arg, Mutation, Query, Resolver } from 'type-graphql';
+import { Arg, Mutation, Query, Resolver, UseMiddleware } from 'type-graphql';
 
 import { User } from '@/generated/prisma/browser';
 import { GqlUser } from '@/graphql/decorators/user.decorator';
+import { IsAuth } from '@/shared/middlewares/is-auth.middleware';
 import { UserModel } from '../auth/models/user.model';
-import { CreateUserInput } from './dtos/create-user.dto';
 import { UpdateUserInput } from './dtos/update-user.dto';
 import { UserService } from './user.service';
 
 @Resolver(() => UserModel)
+@UseMiddleware(IsAuth)
 export class UserResolver {
-  private userService = new UserService();
+  private readonly userService = new UserService();
 
-  @Mutation(() => UserModel)
-  async createUser(@Arg('data', () => CreateUserInput) data: CreateUserInput) {
-    return this.userService.createUser(data);
-  }
-
-  @Mutation(() => Boolean)
-  async deleteUser(@GqlUser() user: User) {
-    return this.userService.deleteUser(user.id);
-  }
-
-  @Mutation(() => UserModel)
+  @Mutation(() => UserModel, { description: 'Atualizar dados do usuário' })
   async updateUser(
     @Arg('data', () => UpdateUserInput) data: UpdateUserInput,
     @GqlUser() user: User,
   ) {
-    return this.userService.updateUser(user, data);
+    return this.userService.updateUser(user.id, data);
   }
 
-  @Query(() => UserModel)
+  @Query(() => UserModel, { description: 'Buscar perfil do usuário' })
   async getUser(@GqlUser() user: User) {
     return this.userService.findUser(user.id);
-  }
-
-  @Query(() => [UserModel])
-  async listUsers() {
-    return this.userService.listUsers();
   }
 }

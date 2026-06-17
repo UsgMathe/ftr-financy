@@ -35,15 +35,15 @@ export class UserService {
     return prismaClient.user.findMany();
   }
 
-  async updateUser(user: User, data: UpdateUserInput) {
-    await this.validateUserExists(user.id);
+  async updateUser(userId: User['id'], data: UpdateUserInput) {
+    await this.validateUserExists(userId);
 
     if (data.email) {
       await this.validateUserExistsByEmail(data.email);
     }
 
     return prismaClient.user.update({
-      where: { id: user.id },
+      where: { id: userId },
       data: {
         name: data.name,
         email: data.email,
@@ -77,7 +77,5 @@ export class UserService {
     });
 
     if (user) throw new ConflictError('Este email já está cadastrado');
-
-    return user;
   }
 }
