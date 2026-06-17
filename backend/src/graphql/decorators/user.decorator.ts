@@ -2,33 +2,21 @@ import { createParameterDecorator, ResolverData } from 'type-graphql';
 
 import { User } from '@/generated/prisma/browser';
 import { prismaClient } from '@/prisma/prisma.client';
+import { UnauthorizedError } from '@/shared/errors/unauthorized.error';
 import { GraphqlContext } from '../graphql.context';
 
 export const GqlUser = () => {
   return createParameterDecorator(
-    async ({
-      context,
-      ...all
-    }: ResolverData<GraphqlContext>): Promise<User | null> => {
-      console.log({ context, all });
-      if (!context || !context.user)
-        throw new Error('Usuário não encontrado 1');
+    async ({ context }: ResolverData<GraphqlContext>): Promise<User> => {
+      if (!context?.user) throw new UnauthorizedError();
 
-      try {
-        const user = await prismaClient.user.findUnique({
-          where: {
-            id: context.user,
-          },
-        });
+      const user = await prismaClient.user.findUnique({
+        where: { id: context.user },
+      });
 
-        if (!user) throw new Error('Usuário não encontrado 2');
+      if (!user) throw new UnauthorizedError();
 
-        return user;
-      } catch (error) {
-        console.log(`Error during instancing gqluser decorator: ${error}`);
-      }
-
-      return null;
+      return user;
     },
   );
 };
