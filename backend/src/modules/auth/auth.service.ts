@@ -9,22 +9,20 @@ import { comparePassword } from '@/shared/utils/hash.utils';
 import { jwtSign, verifyJwt } from '@/shared/utils/jwt.utils';
 
 import { UserService } from '../user/user.service';
-import { SigninInput } from './dtos/signin.dto';
-import { SignupInput, SignupOutput } from './dtos/signup.dto';
+import { SigninInput, SigninOutput } from './dtos/signin.dto';
+import { SignupInput } from './dtos/signup.dto';
 
 export class AuthService {
   private readonly userService = new UserService();
 
-  async signup(data: SignupInput): Promise<SignupOutput> {
-    const user = await this.userService.createUser(data);
-
-    return this.generateTokens(user);
+  async signup(data: SignupInput) {
+    return await this.userService.createUser(data);
   }
 
   async signin(
     data: SigninInput,
     { res }: GraphqlContext,
-  ): Promise<SignupOutput> {
+  ): Promise<SigninOutput> {
     const foundUser = await this.userService.findByEmail(data.email);
 
     if (!foundUser) throw new UnauthorizedError('Usuário não encontrado');
@@ -52,7 +50,7 @@ export class AuthService {
     return true;
   }
 
-  private generateTokens(user: User): SignupOutput {
+  private generateTokens(user: User): SigninOutput {
     const token = jwtSign(
       { id: user.id, email: user.email, name: user.name },
       'token',
@@ -69,8 +67,8 @@ export class AuthService {
     const authHeader = req.headers.authorization;
 
     let user: string | undefined;
-
     let token: string | undefined = req.cookies?.token;
+
     if (!token && authHeader?.startsWith('Bearer ')) {
       token = authHeader.substring('Bearer '.length);
     }
