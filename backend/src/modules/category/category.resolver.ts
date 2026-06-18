@@ -2,10 +2,10 @@ import { User } from '@/generated/prisma/client';
 import { GqlUser } from '@/graphql/decorators/user.decorator';
 import { IsAuth } from '@/shared/middlewares/is-auth.middleware';
 import { Arg, Mutation, Query, Resolver, UseMiddleware } from 'type-graphql';
-import { CategoryService } from '../category.service';
-import { CategoryModel } from '../models/category.model';
-import { CreateCategoryInput } from './create-category.dto';
-import { UpdateCategoryInput } from './update-category.dto';
+import { CategoryService } from './category.service';
+import { CategoryModel } from './models/category.model';
+import { CreateCategoryInput } from './dtos/create-category.dto';
+import { UpdateCategoryInput } from './dtos/update-category.dto';
 
 @Resolver(() => CategoryModel)
 @UseMiddleware(IsAuth)

@@ -6,9 +6,10 @@ import {
   MinLength,
 } from 'class-validator';
 import { Field, InputType } from 'type-graphql';
+import { CreateCategoryInput } from './create-category.dto';
 
 @InputType()
-export class UpdateCategoryInput {
+export class UpdateCategoryInput implements Partial<CreateCategoryInput> {
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString({ message: 'O título deve ser uma string' })
