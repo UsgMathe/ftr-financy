@@ -21,6 +21,14 @@ input CreateCategoryInput {
   title: String!
 }
 
+input CreateTransactionInput {
+  amount: Float!
+  categoryId: ID!
+  date: DateTimeISO!
+  description: String!
+  type: TransactionType!
+}
+
 """
 A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.This scalar is serialized to a string in ISO 8601 format and parsed from a string in ISO 8601 format.
 """
@@ -29,9 +37,11 @@ scalar DateTimeISO
 type Mutation {
   """Criar uma categoria"""
   createCategory(data: CreateCategoryInput!): CategoryModel!
+  createTransaction(data: CreateTransactionInput!): TransactionModel!
 
   """Deletar uma categoria"""
   deleteCategory(id: String!): Boolean!
+  deleteTransaction(id: String!): Boolean!
 
   """Fazer login"""
   signin(data: SigninInput!): SigninOutput!
@@ -44,6 +54,7 @@ type Mutation {
 
   """Atualizar uma categoria"""
   updateCategory(data: UpdateCategoryInput!, id: String!): CategoryModel!
+  updateTransaction(data: UpdateTransactionInput!, id: String!): TransactionModel!
 
   """Atualizar dados do usuário"""
   updateUser(data: UpdateUserInput!): UserModel!
@@ -52,12 +63,14 @@ type Mutation {
 type Query {
   """Buscar uma categoria"""
   getCategory(id: String!): CategoryModel!
+  getTransaction(id: String!): TransactionModel!
 
   """Buscar perfil do usuário"""
   getUser: UserModel!
 
   """Listar as categorias"""
   listCategories: [CategoryModel!]!
+  listTransactions: [TransactionModel!]!
 }
 
 input SigninInput {
@@ -77,11 +90,36 @@ input SignupInput {
   password: String!
 }
 
+type TransactionModel {
+  amount: Float!
+  category: CategoryModel!
+  createdAt: DateTimeISO!
+  date: DateTimeISO!
+  description: String!
+  id: ID!
+  type: TransactionType!
+  updatedAt: DateTimeISO!
+  user: UserModel!
+}
+
+enum TransactionType {
+  EXPENSE
+  INCOME
+}
+
 input UpdateCategoryInput {
   color: String
   description: String
   icon: String
   title: String
+}
+
+input UpdateTransactionInput {
+  amount: Float
+  categoryId: ID
+  date: DateTimeISO
+  description: String
+  type: TransactionType
 }
 
 input UpdateUserInput {

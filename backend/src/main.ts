@@ -9,11 +9,12 @@ import { buildSchema } from 'type-graphql';
 
 import { buildContext, GraphqlContext } from './graphql/graphql.context';
 import { AuthResolver } from './modules/auth/auth.resolver';
+import { CategoryResolver } from './modules/category/category.resolver';
+import { TransactionResolver } from './modules/transaction/transaction.resolver';
 import { UserResolver } from './modules/user/user.resolver';
 import { UnauthorizedError } from './shared/errors/unauthorized.error';
 import { errorHandler } from './shared/middlewares/error-handler.middleware';
 import { env } from './shared/utils/env.utils';
-import { CategoryResolver } from './modules/category/dtos/category.resolver';
 
 async function main() {
   const app = express();
@@ -22,7 +23,12 @@ async function main() {
   app.use(cookieParser());
 
   const schema = await buildSchema({
-    resolvers: [UserResolver, AuthResolver, CategoryResolver],
+    resolvers: [
+      UserResolver,
+      AuthResolver,
+      CategoryResolver,
+      TransactionResolver,
+    ],
     validate: {
       forbidUnknownValues: false,
       validationError: {

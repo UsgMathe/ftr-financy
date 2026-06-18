@@ -65,7 +65,7 @@ export class CategoryService {
     return true;
   }
 
-  private async validateCategoryExists(userId: User['id'], id: Category['id']) {
+  async validateCategoryExists(userId: User['id'], id: Category['id']) {
     const category = await prismaClient.category.findFirst({
       where: { id, userId },
       include: { user: true },
@@ -76,7 +76,7 @@ export class CategoryService {
     return category;
   }
 
-  private async validateCategoryExistsByTitle(
+  async validateCategoryExistsByTitle(
     userId: User['id'],
     title: Category['title'],
   ) {
