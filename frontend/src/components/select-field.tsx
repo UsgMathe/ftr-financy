@@ -1,4 +1,4 @@
-import { Field, FieldLabel } from "./ui/field";
+import { Field, FieldDescription, FieldLabel } from "./ui/field";
 import {
   Select,
   SelectContent,
@@ -16,9 +16,10 @@ type SelectFieldProps = SelectProps & {
     label: string;
     value: string;
   }[];
+  helper?: string;
 };
 
-export function SelectField({ label, placeholder, items, ...props }: SelectFieldProps) {
+export function SelectField({ label, placeholder, items, helper, ...props }: SelectFieldProps) {
   return (
     <Field>
       <FieldLabel>{label}</FieldLabel>
@@ -38,6 +39,8 @@ export function SelectField({ label, placeholder, items, ...props }: SelectField
           </SelectGroup>
         </SelectContent>
       </Select>
+
+      {helper && <FieldDescription>{helper}</FieldDescription>}
     </Field>
   );
 }
