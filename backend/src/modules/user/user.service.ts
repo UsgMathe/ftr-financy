@@ -76,6 +76,6 @@ export class UserService {
       where: { email },
     });
 
-    if (user) throw new ConflictError('Este email já está cadastrado');
+    if (user) throw new ConflictError('Este email já está em uso');
   }
 }

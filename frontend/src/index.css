@@ -117,7 +117,7 @@
   --secondary: var(--gray-100);
   --secondary-foreground: var(--gray-800);
 
-  --muted: var(--gray-200);
+  --muted: var(--gray-300);
   --muted-foreground: var(--gray-500);
 
   --accent: var(--gray-100);
@@ -207,15 +207,5 @@
   }
   html {
     @apply font-sans;
-  }
-
-  a {
-    color: var(--brand-base);
-    font-weight: 500;
-  }
-
-  a:hover {
-    text-decoration: underline;
-    text-underline-offset: 4px;
   }
 }
