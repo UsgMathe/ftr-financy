@@ -19,7 +19,7 @@ export const authService = {
     try {
       const { data } = await apolloClient.mutate({ mutation: SIGNIN_MUTATION, variables: { data: dto } });
 
-      return data.signin;
+      return data.signin.user;
     } catch (error) {
       handleError(error);
     }

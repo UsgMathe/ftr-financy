@@ -9,4 +9,6 @@ export const signinSchema = z.object({
 
 export type SigninInput = z.input<typeof signinSchema>;
 
-export type SigninOutput = UserOutput;
+export type SigninOutput = {
+  user: UserOutput;
+};
