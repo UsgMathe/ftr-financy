@@ -15,6 +15,7 @@ import { Field } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import { AnchorLink } from "@/components/anchor-link";
 
 export function SigninPage() {
   const signin = useAuthStore((store) => store.signin);
@@ -69,7 +70,7 @@ export function SigninPage() {
                 <Label htmlFor="remember-checkbox">Lembrar-me</Label>
               </Field>
 
-              <a href="">Recuperar senha</a>
+              <AnchorLink href="">Recuperar senha</AnchorLink>
             </div>
 
             <Button type="submit" className="my-2 w-full">
