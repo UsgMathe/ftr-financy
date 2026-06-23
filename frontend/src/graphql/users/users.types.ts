@@ -1,5 +1,5 @@
-import type { UserOutput } from "@/schemas/users/users.schema";
+import type { UserModel } from "@/graphql/users/user.model";
 
 export interface GetUserQueryData {
-  getUser: UserOutput;
+  getUser: UserModel;
 }

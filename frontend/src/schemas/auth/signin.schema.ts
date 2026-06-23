@@ -1,6 +1,6 @@
 import z from "zod";
 
-import type { UserOutput } from "../users/users.schema";
+import type { UserModel } from "../../graphql/users/user.model";
 
 export const signinSchema = z.object({
   email: z.email("Email inválido"),
@@ -10,5 +10,5 @@ export const signinSchema = z.object({
 export type SigninInput = z.input<typeof signinSchema>;
 
 export type SigninOutput = {
-  user: UserOutput;
+  user: UserModel;
 };

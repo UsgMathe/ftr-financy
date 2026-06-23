@@ -1,12 +1,12 @@
 import type { SigninInput, SigninOutput } from "@/schemas/auth/signin.schema";
 import type { SignupInput, SignupOutput } from "@/schemas/auth/signup.schema";
-import type { UserOutput } from "@/schemas/users/users.schema";
+import type { UserModel } from "@/graphql/users/user.model";
 import { authService } from "@/services/auth.service";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 interface AuthStore {
-  user: UserOutput | null;
+  user: UserModel | null;
   isAuthenticated: boolean;
 
   checkAuth: () => Promise<void>;

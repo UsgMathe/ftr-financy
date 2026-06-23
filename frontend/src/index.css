@@ -99,6 +99,8 @@
   --color-green-dark: var(--green-dark);
   --color-green-base: var(--green-base);
   --color-green-light: var(--green-light);
+
+  --color-description: var(--color-gray-600);
 }
 
 :root {
