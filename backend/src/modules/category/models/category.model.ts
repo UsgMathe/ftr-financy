@@ -22,6 +22,9 @@ export class CategoryModel implements Partial<Category> {
   @Field(() => UserModel)
   user!: UserModel;
 
+  @Field(() => Number)
+  transactionsCount!: number;
+
   @Field(() => GraphQLISODateTime)
   createdAt!: Date;
 

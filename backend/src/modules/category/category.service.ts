@@ -26,10 +26,15 @@ export class CategoryService {
   }
 
   async listCategories(userId: User['id']) {
-    return prismaClient.category.findMany({
+    const categories = await prismaClient.category.findMany({
       where: { userId },
-      include: { user: true },
+      include: { user: true, _count: { select: { transactions: true } } },
     });
+
+    return categories.map(cat => ({
+      ...cat,
+      transactionsCount: cat._count.transactions,
+    }));
   }
 
   async updateCategory(
