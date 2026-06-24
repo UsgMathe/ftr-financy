@@ -1,5 +1,6 @@
 import { Category, User } from '@/generated/prisma/client';
 import { prismaClient } from '@/prisma/prisma.client';
+import { BadRequestError } from '@/shared/errors/bad-request.error';
 import { ConflictError } from '@/shared/errors/conflict.error';
 import { NotFoundError } from '@/shared/errors/not-found.error';
 import { CreateCategoryInput } from './dtos/create-category.dto';
@@ -62,6 +63,16 @@ export class CategoryService {
 
   async deleteCategory(userId: User['id'], id: Category['id']) {
     await this.validateCategoryExists(userId, id);
+
+    const transactionsCount = await prismaClient.transaction.count({
+      where: { categoryId: id },
+    });
+
+    if (transactionsCount > 1) {
+      throw new BadRequestError(
+        'Não é possível excluir uma categoria que possui transaçãoes vinculadas.',
+      );
+    }
 
     await prismaClient.category.delete({
       where: { id },
