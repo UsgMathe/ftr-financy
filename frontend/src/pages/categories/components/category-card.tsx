@@ -5,12 +5,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import type { CategoryModel } from "@/graphql/categories/category.model";
+import type { IconName } from "@/types/icon.type";
 
 interface CategoryCardProps {
   category: CategoryModel;
 }
 export function CategoryCard({ category }: CategoryCardProps) {
-  const IconComponent = Icons[category.icon as keyof typeof Icons] as LucideIcon;
+  const IconComponent = Icons[category.icon as IconName] as LucideIcon;
 
   const backgroundColor = `${category.color}25`;
 

@@ -1,6 +1,6 @@
+import type { UserModel } from "@/graphql/users/user.model";
 import type { SigninInput, SigninOutput } from "@/schemas/auth/signin.schema";
 import type { SignupInput, SignupOutput } from "@/schemas/auth/signup.schema";
-import type { UserModel } from "@/graphql/users/user.model";
 import { authService } from "@/services/auth.service";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -48,7 +48,7 @@ export const useAuthStore = create<AuthStore>()(
 
         if (response) {
           set({
-            user: response,
+            user: response.user,
             isAuthenticated: true,
           });
         }

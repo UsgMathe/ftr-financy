@@ -58,6 +58,7 @@ export function SignupPage() {
               icon={<User2Icon />}
               invalid={!!form.formState.errors.name}
               helper={form.formState.errors.name?.message}
+              disabled={form.formState.isSubmitting}
               {...form.register("name")}
             />
 
@@ -68,6 +69,7 @@ export function SignupPage() {
               icon={<MailIcon />}
               invalid={!!form.formState.errors.email}
               helper={form.formState.errors.email?.message}
+              disabled={form.formState.isSubmitting}
               {...form.register("email")}
             />
 
@@ -78,10 +80,11 @@ export function SignupPage() {
               icon={<LockIcon />}
               invalid={!!form.formState.errors.password}
               helper={form.formState.errors.password?.message}
+              disabled={form.formState.isSubmitting}
               {...form.register("password")}
             />
 
-            <Button type="submit" className="my-2 w-full">
+            <Button type="submit" className="my-2 w-full" disabled={form.formState.isSubmitting}>
               Cadastrar
             </Button>
 
@@ -94,7 +97,7 @@ export function SignupPage() {
             <p className="text-muted-foreground text-center text-sm">Já tem uma conta?</p>
 
             <Link to="/signin">
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" disabled={form.formState.isSubmitting}>
                 <LogInIcon />
                 <span>Fazer login</span>
               </Button>

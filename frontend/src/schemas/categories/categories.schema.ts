@@ -1,7 +1,4 @@
-import * as Icon from "lucide-react";
 import z from "zod";
-
-const HEX_COLOR_REGEX = /^#[0-9A-F]{6}$/i;
 
 export const createCategorySchema = z.object({
   title: z
@@ -10,11 +7,16 @@ export const createCategorySchema = z.object({
     .min(3, "O título deve ter no mínimo 3 caracteres")
     .max(100, "O título deve ter no máximo 100 caracteres"),
 
-  description: z.string().trim().max(255, "A descrição deve ter no máximo 255 caracteres").optional(),
+  description: z
+    .string()
+    .trim()
+    .max(255, "A descrição deve ter no máximo 255 caracteres")
+    .optional()
+    .transform((value) => (value ? value : null)),
 
-  icon: z.enum(Object.keys(Icon) as [keyof typeof Icon, ...(keyof typeof Icon)[]]),
+  icon: z.string("Selecione um ícone").min(1, "Selecione um ícone").trim(),
 
-  color: z.string().regex(HEX_COLOR_REGEX, "A cor deve estar no formato hexadecimal (#RRGGBB)"),
+  color: z.string("Selecione uma cor").min(1, "Selecione uma cor").trim(),
 });
 
 export type CreateCategoryInput = z.input<typeof createCategorySchema>;
