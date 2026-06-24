@@ -23,8 +23,9 @@ export function CategoriesPage() {
   const categories = listCategoriesQuery.data?.listCategories;
 
   const totalTransactionsCount = categories?.reduce((prev, cur) => prev + cur.transactionsCount, 0);
-  const mostUsedCategory = categories?.reduce((prev, current) =>
-    current.transactionsCount > prev.transactionsCount ? current : prev,
+  const mostUsedCategory = categories?.reduce(
+    (prev, current) => (current.transactionsCount > prev?.transactionsCount ? current : prev),
+    null,
   );
 
   const handleCreateMutation = async (data: CreateCategoryInput, form: UseFormReturn<CreateCategoryInput>) => {
