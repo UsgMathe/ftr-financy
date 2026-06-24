@@ -42,9 +42,9 @@ export class CategoryService {
     id: Category['id'],
     data: UpdateCategoryInput,
   ) {
-    await this.validateCategoryExists(userId, id);
+    const category = await this.validateCategoryExists(userId, id);
 
-    if (data.title) {
+    if (data.title && data.title !== category.title) {
       await this.validateCategoryExistsByTitle(userId, data.title);
     }
 
@@ -70,15 +70,20 @@ export class CategoryService {
     return true;
   }
 
-  async validateCategoryExists(userId: User['id'], id: Category['id']) {
+  async validateCategoryExists(
+    userId: User['id'],
+    id: Category['id'],
+    throwError: boolean = true,
+  ) {
     const category = await prismaClient.category.findFirst({
       where: { id, userId },
-      include: { user: true },
+      include: { user: true, _count: { select: { transactions: true } } },
     });
 
-    if (!category) throw new NotFoundError('Categoria não encontrada');
+    if (!category && throwError)
+      throw new NotFoundError('Categoria não encontrada');
 
-    return category;
+    return { ...category, transactionsCount: category._count.transactions };
   }
 
   async validateCategoryExistsByTitle(

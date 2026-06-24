@@ -5,6 +5,7 @@ import { User } from '@prisma/client';
 import { CategoryService } from '../category/category.service';
 import { CreateTransactionInput } from './dtos/create-transaction.dto';
 import { UpdateTransactionInput } from './dtos/update-transaction.dto';
+import { BadRequestError } from '@/shared/errors/bad-request.error';
 
 export class TransactionService {
   private readonly categoryService = new CategoryService();
@@ -13,7 +14,13 @@ export class TransactionService {
     userId: User['id'],
     data: CreateTransactionInput,
   ): Promise<Transaction> {
-    await this.categoryService.validateCategoryExists(userId, data.categoryId);
+    const category = await this.categoryService.validateCategoryExists(
+      userId,
+      data.categoryId,
+      false,
+    );
+
+    if (!category) throw new BadRequestError('Categoria não encontrada');
 
     return prismaClient.transaction.create({
       data: {
