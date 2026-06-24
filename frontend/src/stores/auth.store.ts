@@ -7,12 +7,12 @@ import { persist } from "zustand/middleware";
 
 interface AuthStore {
   user: UserModel | null;
-  isAuthenticated: boolean;
+  isAuthenticated: boolean | null;
 
   checkAuth: () => Promise<void>;
 
-  signin: (data: SigninInput) => Promise<SigninOutput>;
-  signup: (data: SignupInput) => Promise<SignupOutput>;
+  signin: (data: SigninInput) => Promise<SigninOutput | undefined>;
+  signup: (data: SignupInput) => Promise<SignupOutput | undefined>;
   signout: () => void;
 }
 

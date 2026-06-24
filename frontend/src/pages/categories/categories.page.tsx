@@ -1,34 +1,46 @@
 import { useMutation, useQuery } from "@apollo/client/react";
-import * as Icons from "lucide-react";
-import { ArrowUpDownIcon, PlusIcon, TagIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
+import { useState } from "react";
+import type { UseFormReturn } from "react-hook-form";
+import { toast } from "sonner";
+
+import {
+  CREATE_CATEGORY_MUTATION,
+  DELETE_CATEGORY_MUTATION,
+  UPDATE_CATEGORY_MUTATION,
+} from "@/graphql/categories/categories.mutations";
+import { LIST_CATEGORIES_QUERY } from "@/graphql/categories/categories.queries";
+import { type CategoryModel } from "@/graphql/categories/category.model";
+import type { CreateCategoryInput, UpdateCategoryInput } from "@/schemas/categories/categories.schema";
 
 import { DashboardCard } from "@/components/dashboard-card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CREATE_CATEGORY_MUTATION } from "@/graphql/categories/categories.mutations";
-import { LIST_CATEGORIES_QUERY } from "@/graphql/categories/categories.queries";
-import type { CreateCategoryInput } from "@/schemas/categories/categories.schema";
-import { useState } from "react";
-import type { UseFormReturn } from "react-hook-form";
-import { toast } from "sonner";
+import { getErrorMessage } from "@/utils/error.utils";
 import { CategoryCard } from "./components/category-card";
 import { CreateCategoryDialog } from "./components/create-category-dialog";
+import { DeleteCategoryConfirmationDialog } from "./components/delete-category-confirmation-dialog";
+import { UpdateCategoryDialog } from "./components/update-category-dialog";
 
 export function CategoriesPage() {
   const [isOpenCreateDialog, setIsOpenCreateDialog] = useState<boolean>(false);
+  const [editingCategory, setEditingCategory] = useState<CategoryModel>();
+  const [deletingCategory, setDeletingCategory] = useState<CategoryModel>();
 
   const listCategoriesQuery = useQuery(LIST_CATEGORIES_QUERY);
   const [createCategoryMutation] = useMutation(CREATE_CATEGORY_MUTATION);
+  const [upateCategoryMutation] = useMutation(UPDATE_CATEGORY_MUTATION);
+  const [deleteCategoryMutation] = useMutation(DELETE_CATEGORY_MUTATION);
 
   const categories = listCategoriesQuery.data?.listCategories;
 
   const totalTransactionsCount = categories?.reduce((prev, cur) => prev + cur.transactionsCount, 0);
-  const mostUsedCategory = categories?.reduce(
-    (prev, current) => (current.transactionsCount > prev?.transactionsCount ? current : prev),
-    null,
+  const mostUsedCategory = categories?.reduce<CategoryModel | undefined>(
+    (prev, current) => (!prev || current.transactionsCount > prev.transactionsCount ? current : prev),
+    undefined,
   );
 
-  const handleCreateMutation = async (data: CreateCategoryInput, form: UseFormReturn<CreateCategoryInput>) => {
+  const handleCreateCategory = async (data: CreateCategoryInput, form: UseFormReturn<CreateCategoryInput>) => {
     try {
       await createCategoryMutation({ variables: { data } });
       await listCategoriesQuery.refetch();
@@ -36,9 +48,36 @@ export function CategoriesPage() {
       form.reset();
     } catch (error) {
       toast.error("Falha ao criar categoria", {
-        description: error.message || "Algo inesperado aconteceu",
+        description: getErrorMessage(error),
         position: "top-center",
       });
+    }
+  };
+
+  const handleUpdateCategory = async (
+    categoryId: CategoryModel["id"],
+    data: UpdateCategoryInput,
+    form: UseFormReturn<UpdateCategoryInput>,
+  ) => {
+    try {
+      await upateCategoryMutation({ variables: { categoryId, data } });
+      await listCategoriesQuery.refetch();
+      setEditingCategory(undefined);
+      form.reset();
+    } catch (error) {
+      toast.error("Falha ao editar categoria", {
+        description: getErrorMessage(error),
+        position: "top-center",
+      });
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId: CategoryModel["id"]) => {
+    try {
+      await deleteCategoryMutation({ variables: { categoryId } });
+      await listCategoriesQuery.refetch();
+    } catch (error) {
+      toast.error("Falha ao excluir categoria", { description: getErrorMessage(error) });
     }
   };
 
@@ -47,7 +86,22 @@ export function CategoriesPage() {
       <CreateCategoryDialog
         open={isOpenCreateDialog}
         onOpenChange={setIsOpenCreateDialog}
-        onSubmit={handleCreateMutation}
+        onSubmit={handleCreateCategory}
+      />
+
+      <UpdateCategoryDialog
+        open={!!editingCategory}
+        category={editingCategory}
+        onOpenChange={(open) => !open && setEditingCategory(undefined)}
+        onSubmit={handleUpdateCategory}
+      />
+
+      <DeleteCategoryConfirmationDialog
+        category={deletingCategory}
+        open={!!deletingCategory}
+        onOpenChange={(open) => !open && setDeletingCategory(undefined)}
+        onConfirm={({ id }) => handleDeleteCategory(id)}
+        onCancel={() => setDeletingCategory(undefined)}
       />
 
       <header className="flex items-center justify-between gap-4">
@@ -70,14 +124,14 @@ export function CategoriesPage() {
         ) : (
           <>
             <DashboardCard
-              icon={TagIcon}
+              icon={"TagIcon"}
               title={categories?.length}
               description="TOTAL DE CATEGORIAS"
               iconColor="var(--color-gray-700)"
             />
 
             <DashboardCard
-              icon={ArrowUpDownIcon}
+              icon={"ArrowUpDownIcon"}
               title={totalTransactionsCount}
               description="TOTAL DE TRANSAÇÕES"
               iconColor="var(--color-purple-base)"
@@ -85,7 +139,7 @@ export function CategoriesPage() {
 
             {mostUsedCategory && (
               <DashboardCard
-                icon={Icons[mostUsedCategory?.icon]}
+                icon={mostUsedCategory.icon}
                 title={mostUsedCategory?.title}
                 description="CATEGORIA MAIS UTILIZADA"
                 iconColor={mostUsedCategory?.color}
@@ -100,7 +154,14 @@ export function CategoriesPage() {
           ? Array.from({ length: 5 }).map((_, index) => (
               <Skeleton key={`category-card-skeleton-${index}`} className="h-52" />
             ))
-          : categories?.map((category) => <CategoryCard key={category.id} category={category} />)}
+          : categories?.map((category) => (
+              <CategoryCard
+                key={category.id}
+                category={category}
+                onEdit={setEditingCategory}
+                onDelete={setDeletingCategory}
+              />
+            ))}
       </div>
     </div>
   );

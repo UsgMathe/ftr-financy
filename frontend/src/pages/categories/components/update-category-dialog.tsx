@@ -1,5 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
 import { Controller, useForm, type UseFormReturn } from "react-hook-form";
+
+import type { CategoryModel } from "@/graphql/categories/category.model";
+import { type UpdateCategoryInput, updateCategorySchema } from "@/schemas/categories/categories.schema";
 
 import { InputField } from "@/components/input-field";
 import { Button } from "@/components/ui/button";
@@ -7,23 +11,23 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Field, FieldContent, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { CATEGORY_COLORS } from "@/constants/category-colors";
 import { CATEGORY_ICONS } from "@/constants/category-icons";
-import { type CreateCategoryInput, createCategorySchema } from "@/schemas/categories/categories.schema";
 import { ColorButton } from "./color-button";
 import { IconButton } from "./icon-button";
 
-interface CreateCategoryDialogProps {
+interface UpdateCategoryDialogProps {
+  category?: CategoryModel;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
-  onSubmit?: (data: CreateCategoryInput, form: UseFormReturn<CreateCategoryInput>) => any;
+  onSubmit?: (id: CategoryModel["id"], data: UpdateCategoryInput, form: UseFormReturn<UpdateCategoryInput>) => any;
 }
-export function CreateCategoryDialog({ open, onOpenChange, onSubmit }: CreateCategoryDialogProps) {
-  const form = useForm<CreateCategoryInput>({
-    resolver: zodResolver(createCategorySchema),
+export function UpdateCategoryDialog({ category, open, onOpenChange, onSubmit }: UpdateCategoryDialogProps) {
+  const form = useForm<UpdateCategoryInput>({
+    resolver: zodResolver(updateCategorySchema),
     defaultValues: {
-      title: "",
-      description: "",
-      icon: "",
-      color: "",
+      title: category?.title || "",
+      description: category?.description || "",
+      icon: category?.icon || "",
+      color: category?.color || "",
     },
   });
 
@@ -32,17 +36,26 @@ export function CreateCategoryDialog({ open, onOpenChange, onSubmit }: CreateCat
     form.reset();
   };
 
-  const handleSubmit = async (data: CreateCategoryInput) => {
-    await onSubmit?.(data, form);
+  const handleSubmit = async (data: UpdateCategoryInput) => {
+    await onSubmit?.(category?.id!, data, form);
   };
+
+  useEffect(() => {
+    form.reset({
+      title: category?.title || "",
+      description: category?.description || "",
+      icon: category?.icon || "",
+      color: category?.color || "",
+    });
+  }, [category]);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
           <DialogHeader>
-            <DialogTitle>Nova categoria</DialogTitle>
-            <DialogDescription>Organize suas transações com categorias</DialogDescription>
+            <DialogTitle>Editar categoria</DialogTitle>
+            <DialogDescription>Edite as informações da categoria</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">

@@ -9,8 +9,10 @@ import type { IconName } from "@/types/icon.type";
 
 interface CategoryCardProps {
   category: CategoryModel;
+  onEdit: (category: CategoryModel) => void;
+  onDelete: (category: CategoryModel) => void;
 }
-export function CategoryCard({ category }: CategoryCardProps) {
+export function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) {
   const IconComponent = Icons[category.icon as IconName] as LucideIcon;
 
   const backgroundColor = `${category.color}25`;
@@ -23,11 +25,11 @@ export function CategoryCard({ category }: CategoryCardProps) {
         </div>
 
         <div className="space-x-2">
-          <Button variant="outline-destructive" size="icon-sm">
+          <Button variant="outline-destructive" size="icon-sm" onClick={() => onDelete(category)}>
             <Icons.TrashIcon />
           </Button>
 
-          <Button variant="outline" size="icon-sm">
+          <Button variant="outline" size="icon-sm" onClick={() => onEdit(category)}>
             <Icons.EditIcon />
           </Button>
         </div>

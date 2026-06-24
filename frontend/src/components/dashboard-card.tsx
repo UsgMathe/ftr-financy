@@ -1,14 +1,17 @@
-import { type LucideIcon } from "lucide-react";
+import type { IconName } from "@/types/icon.type";
+import * as Icons from "lucide-react";
 import type { ReactNode } from "react";
 import { Card, CardContent } from "./ui/card";
 
 interface DashboardCardProps {
   title: ReactNode;
   description: ReactNode;
-  icon: LucideIcon;
+  icon: IconName;
   iconColor?: string;
 }
-export function DashboardCard({ title, description, icon: Icon, iconColor }: DashboardCardProps) {
+export function DashboardCard({ title, description, icon, iconColor }: DashboardCardProps) {
+  const Icon = Icons[icon] as Icons.LucideIcon;
+
   return (
     <Card>
       <CardContent className="flex gap-4">

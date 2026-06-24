@@ -9,7 +9,7 @@ export const authService = {
     try {
       const { data } = await apolloClient.mutate({ mutation: SIGNUP_MUTATION, variables: { data: dto } });
 
-      return data.signup;
+      return data?.signup;
     } catch (error) {
       handleError(error);
     }
@@ -19,7 +19,7 @@ export const authService = {
     try {
       const { data } = await apolloClient.mutate({ mutation: SIGNIN_MUTATION, variables: { data: dto } });
 
-      return data.signin;
+      return data?.signin;
     } catch (error) {
       handleError(error);
     }
@@ -29,7 +29,7 @@ export const authService = {
     try {
       const { data } = await apolloClient.query({ query: GET_USER_QUERY });
 
-      return data.getUser;
+      return data?.getUser;
     } catch (error) {
       handleError(error);
     }

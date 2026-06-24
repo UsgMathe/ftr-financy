@@ -2,6 +2,8 @@ import { gql, type TypedDocumentNode } from "@apollo/client";
 import type {
   CreateCategoryMutationData,
   CreateCategoryMutationVariables,
+  DeleteCategoryMutationData,
+  DeleteCategoryMutationVariables,
   UpdateCategoryMutationData,
   UpdateCategoryMutationVariables,
 } from "./categories.types";
@@ -33,5 +35,12 @@ export const UPDATE_CATEGORY_MUTATION: TypedDocumentNode<UpdateCategoryMutationD
         createdAt
         updatedAt
       }
+    }
+  `;
+
+export const DELETE_CATEGORY_MUTATION: TypedDocumentNode<DeleteCategoryMutationData, DeleteCategoryMutationVariables> =
+  gql`
+    mutation DeleteCategory($categoryId: String!) {
+      deleteCategory(id: $categoryId)
     }
   `;

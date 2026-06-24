@@ -11,6 +11,7 @@ import { InputField } from "@/components/input-field";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { getErrorMessage } from "@/utils/error.utils";
 import { toast } from "sonner";
 
 export function SignupPage() {
@@ -31,12 +32,7 @@ export function SignupPage() {
       toast.success("Conta criada", { description: "Você já pode fazer o login." });
       navigate("/signin");
     } catch (error) {
-      console.log(error.errors);
-      if (error instanceof Error) {
-        toast.error("Falha ao criar conta", { description: error.message });
-      } else {
-        toast.error("Falha ao criar conta", { description: "Tente novamente mais tarde." });
-      }
+      toast.error("Falha ao criar conta", { description: getErrorMessage(error, "Tente novamente mais tarde.") });
     }
   };
 

@@ -64,6 +64,7 @@
   /* Feedback */
   --color-success: var(--success);
   --color-danger: var(--danger);
+  --color-danger-hover: var(--danger-hover);
 
   /* Blue */
   --color-blue-dark: var(--blue-dark);
@@ -162,6 +163,7 @@
 
   /* Feedback */
   --danger: #ef4444;
+  --danger-hover: #dc2626;
   --success: #19ad70;
 
   /* Blue */

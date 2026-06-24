@@ -14,9 +14,18 @@ export interface UpdateCategoryMutationData {
 }
 
 export interface UpdateCategoryMutationVariables {
+  categoryId: string;
   data: UpdateCategoryInput;
 }
 
 export interface ListCategoriesQueryData {
   listCategories: Array<CategoryModel>;
+}
+
+export interface DeleteCategoryMutationData {
+  deleteCategory: boolean;
+}
+
+export interface DeleteCategoryMutationVariables {
+  categoryId: string;
 }
