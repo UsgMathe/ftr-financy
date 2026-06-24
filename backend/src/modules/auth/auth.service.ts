@@ -32,7 +32,7 @@ export class AuthService {
       foundUser.password,
     );
 
-    if (!passwordMatches) throw new UnauthorizedError();
+    if (!passwordMatches) throw new UnauthorizedError('Senha incorreta');
     const tokens = this.generateTokens(foundUser);
 
     setAuthCookies(res, {
