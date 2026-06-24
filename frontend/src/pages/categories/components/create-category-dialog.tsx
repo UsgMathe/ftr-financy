@@ -36,6 +36,8 @@ export function CreateCategoryDialog({ open, onOpenChange, onSubmit }: CreateCat
     await onSubmit?.(data, form);
   };
 
+  const isSubmitting = form.formState.isSubmitting;
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
@@ -51,7 +53,7 @@ export function CreateCategoryDialog({ open, onOpenChange, onSubmit }: CreateCat
               placeholder="Ex. Alimentação"
               invalid={!!form.formState.errors.title}
               helper={form.formState.errors.title?.message}
-              disabled={form.formState.isSubmitting}
+              disabled={isSubmitting}
               {...form.register("title")}
             />
 
@@ -60,7 +62,7 @@ export function CreateCategoryDialog({ open, onOpenChange, onSubmit }: CreateCat
               placeholder="Ex. Alimentação"
               invalid={!!form.formState.errors.description}
               helper={form.formState.errors.description?.message || "Opcional"}
-              disabled={form.formState.isSubmitting}
+              disabled={isSubmitting}
               {...form.register("description")}
             />
 
@@ -77,6 +79,7 @@ export function CreateCategoryDialog({ open, onOpenChange, onSubmit }: CreateCat
                         icon={icon}
                         selected={field.value === icon}
                         onClick={field.onChange}
+                        disabled={isSubmitting}
                       />
                     ))}
                   </FieldContent>
@@ -98,6 +101,7 @@ export function CreateCategoryDialog({ open, onOpenChange, onSubmit }: CreateCat
                         selected={field.value === color}
                         color={color}
                         onClick={field.onChange}
+                        disabled={isSubmitting}
                       />
                     ))}
                   </FieldContent>
@@ -107,8 +111,8 @@ export function CreateCategoryDialog({ open, onOpenChange, onSubmit }: CreateCat
             />
           </div>
 
-          <Button type="submit" className="w-full">
-            Salvar
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? "Salvando" : "Salvar"}
           </Button>
         </form>
       </DialogContent>

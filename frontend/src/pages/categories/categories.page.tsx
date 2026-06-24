@@ -76,6 +76,7 @@ export function CategoriesPage() {
     try {
       await deleteCategoryMutation({ variables: { categoryId } });
       await listCategoriesQuery.refetch();
+      setDeletingCategory(undefined);
     } catch (error) {
       toast.error("Falha ao excluir categoria", { description: getErrorMessage(error) });
     }
