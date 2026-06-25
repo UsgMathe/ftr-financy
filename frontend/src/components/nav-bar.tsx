@@ -24,7 +24,7 @@ export function NavBar() {
       </div>
 
       <Avatar size="lg">
-        <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+        <AvatarFallback>{getInitials(user?.name)}</AvatarFallback>
       </Avatar>
     </nav>
   );

@@ -14,6 +14,7 @@ import { type CategoryModel } from "@/graphql/categories/category.model";
 import type { CreateCategoryInput, UpdateCategoryInput } from "@/schemas/categories/categories.schema";
 
 import { DashboardCard } from "@/components/dashboard-card";
+import { PageHeader } from "@/components/page-title";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getErrorMessage } from "@/utils/error.utils";
@@ -106,10 +107,7 @@ export function CategoriesPage() {
       />
 
       <header className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Categorias</h1>
-          <h2 className="text-description text-base font-normal">Organize suas transações por categorias</h2>
-        </div>
+        <PageHeader title="Categorias" description="Organize suas transações por categorias" />
 
         <Button size="sm" onClick={() => setIsOpenCreateDialog(true)}>
           <PlusIcon />
