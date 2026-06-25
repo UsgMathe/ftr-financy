@@ -1,9 +1,17 @@
 import { User } from '@/generated/prisma/client';
 import { GqlUser } from '@/graphql/decorators/user.decorator';
 import { IsAuth } from '@/shared/middlewares/is-auth.middleware';
-import { Arg, Mutation, Query, Resolver, UseMiddleware } from 'type-graphql';
+import {
+  Arg,
+  Int,
+  Mutation,
+  Query,
+  Resolver,
+  UseMiddleware,
+} from 'type-graphql';
 import { CreateTransactionInput } from './dtos/create-transaction.dto';
 import { UpdateTransactionInput } from './dtos/update-transaction.dto';
+import { PaginatedTransactionsModel } from './models/paginated-transactions.model';
 import { TransactionModel } from './models/transaction.model';
 import { TransactionService } from './transaction.service';
 
@@ -45,8 +53,13 @@ export class TransactionResolver {
     return this.transactionService.findTransaction(user.id, id);
   }
 
-  @Query(() => [TransactionModel])
-  async listTransactions(@GqlUser() user: User) {
-    return this.transactionService.listTransactions(user.id);
+  @Query(() => PaginatedTransactionsModel)
+  async listTransactions(
+    @GqlUser() user: User,
+    @Arg('page', () => Int, { defaultValue: 1, nullable: true }) page?: number,
+    @Arg('limit', () => Int, { defaultValue: 10, nullable: true })
+    limit?: number,
+  ) {
+    return this.transactionService.listTransactions(user.id, page, limit);
   }
 }

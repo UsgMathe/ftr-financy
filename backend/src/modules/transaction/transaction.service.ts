@@ -2,6 +2,7 @@ import { Transaction } from '@/generated/prisma/client';
 import { prismaClient } from '@/prisma/prisma.client';
 import { NotFoundError } from '@/shared/errors/not-found.error';
 import { User } from '@prisma/client';
+import { buildPaginationMeta } from '@/shared/graphql/create-paginated-model.factory';
 import { CategoryService } from '../category/category.service';
 import { CreateTransactionInput } from './dtos/create-transaction.dto';
 import { UpdateTransactionInput } from './dtos/update-transaction.dto';
@@ -39,11 +40,32 @@ export class TransactionService {
     return this.validateTransactionExists(userId, id);
   }
 
-  async listTransactions(userId: User['id']) {
-    return prismaClient.transaction.findMany({
-      where: { userId },
-      include: { category: true, user: true },
-    });
+  async listTransactions(
+    userId: User['id'],
+    page?: number,
+    limit?: number,
+  ) {
+    const safePage = page ?? 1;
+    const safeLimit = limit ?? 10;
+    const skip = (safePage - 1) * safeLimit;
+
+    const [items, totalItems] = await prismaClient.$transaction([
+      prismaClient.transaction.findMany({
+        where: { userId },
+        include: { category: true, user: true },
+        skip,
+        take: safeLimit,
+        orderBy: { date: 'desc' },
+      }),
+      prismaClient.transaction.count({
+        where: { userId },
+      }),
+    ]);
+
+    return {
+      items,
+      pagination: buildPaginationMeta(totalItems, { page: safePage, limit: safeLimit }),
+    };
   }
 
   async updateTransaction(

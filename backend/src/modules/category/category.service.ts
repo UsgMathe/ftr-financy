@@ -3,6 +3,7 @@ import { prismaClient } from '@/prisma/prisma.client';
 import { BadRequestError } from '@/shared/errors/bad-request.error';
 import { ConflictError } from '@/shared/errors/conflict.error';
 import { NotFoundError } from '@/shared/errors/not-found.error';
+import { buildPaginationMeta } from '@/shared/graphql/create-paginated-model.factory';
 import { CreateCategoryInput } from './dtos/create-category.dto';
 import { UpdateCategoryInput } from './dtos/update-category.dto';
 
@@ -26,16 +27,36 @@ export class CategoryService {
     return this.validateCategoryExists(userId, id);
   }
 
-  async listCategories(userId: User['id']) {
-    const categories = await prismaClient.category.findMany({
-      where: { userId },
-      include: { user: true, _count: { select: { transactions: true } } },
-    });
+  async listCategories(
+    userId: User['id'],
+    page?: number,
+    limit?: number,
+  ) {
+    const safePage = page ?? 1;
+    const safeLimit = limit ?? 10;
+    const skip = (safePage - 1) * safeLimit;
 
-    return categories.map(cat => ({
+    const [categories, totalItems] = await prismaClient.$transaction([
+      prismaClient.category.findMany({
+        where: { userId },
+        include: { user: true, _count: { select: { transactions: true } } },
+        skip,
+        take: safeLimit,
+      }),
+      prismaClient.category.count({
+        where: { userId },
+      }),
+    ]);
+
+    const items = categories.map(cat => ({
       ...cat,
       transactionsCount: cat._count.transactions,
     }));
+
+    return {
+      items,
+      pagination: buildPaginationMeta(totalItems, { page: safePage, limit: safeLimit }),
+    };
   }
 
   async updateCategory(

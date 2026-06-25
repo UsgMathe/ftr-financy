@@ -61,6 +61,25 @@ type Mutation {
   updateUser(data: UpdateUserInput!): UserModel!
 }
 
+type PaginatedCategoriesModel {
+  items: [CategoryModel!]!
+  pagination: PaginationMetaModel!
+}
+
+type PaginatedTransactionsModel {
+  items: [TransactionModel!]!
+  pagination: PaginationMetaModel!
+}
+
+type PaginationMetaModel {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  page: Int!
+  pageSize: Int!
+  totalItems: Int!
+  totalPages: Int!
+}
+
 type Query {
   """Buscar uma categoria"""
   getCategory(id: String!): CategoryModel!
@@ -70,8 +89,8 @@ type Query {
   getUser: UserModel!
 
   """Listar as categorias"""
-  listCategories: [CategoryModel!]!
-  listTransactions: [TransactionModel!]!
+  listCategories(limit: Int! = 10, page: Int! = 1): PaginatedCategoriesModel!
+  listTransactions(limit: Int = 10, page: Int = 1): PaginatedTransactionsModel!
 }
 
 input SigninInput {

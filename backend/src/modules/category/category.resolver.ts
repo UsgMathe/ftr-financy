@@ -1,7 +1,8 @@
 import { User } from '@/generated/prisma/client';
 import { GqlUser } from '@/graphql/decorators/user.decorator';
 import { IsAuth } from '@/shared/middlewares/is-auth.middleware';
-import { Arg, Mutation, Query, Resolver, UseMiddleware } from 'type-graphql';
+import { Arg, Int, Mutation, Query, Resolver, UseMiddleware } from 'type-graphql';
+import { PaginatedCategoriesModel } from './models/paginated-categories.model';
 import { CategoryService } from './category.service';
 import { CategoryModel } from './models/category.model';
 import { CreateCategoryInput } from './dtos/create-category.dto';
@@ -45,8 +46,12 @@ export class CategoryResolver {
     return this.categoryService.findCategory(user.id, id);
   }
 
-  @Query(() => [CategoryModel], { description: 'Listar as categorias' })
-  async listCategories(@GqlUser() user: User) {
-    return this.categoryService.listCategories(user.id);
+  @Query(() => PaginatedCategoriesModel, { description: 'Listar as categorias' })
+  async listCategories(
+    @GqlUser() user: User,
+    @Arg('page', () => Int, { defaultValue: 1 }) page: number,
+    @Arg('limit', () => Int, { defaultValue: 10 }) limit: number,
+  ) {
+    return this.categoryService.listCategories(user.id, page, limit);
   }
 }
