@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "@apollo/client/react";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, TagIcon } from "lucide-react";
 import { useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
@@ -15,7 +15,9 @@ import type { CreateCategoryInput, UpdateCategoryInput } from "@/schemas/categor
 
 import { DashboardCard } from "@/components/dashboard-card";
 import { PageHeader } from "@/components/page-title";
+import { Pagination } from "@/components/pagination";
 import { Button } from "@/components/ui/button";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getErrorMessage } from "@/utils/error.utils";
 import { CategoryCard } from "./components/category-card";
@@ -23,17 +25,30 @@ import { CreateCategoryDialog } from "./components/create-category-dialog";
 import { DeleteCategoryConfirmationDialog } from "./components/delete-category-confirmation-dialog";
 import { UpdateCategoryDialog } from "./components/update-category-dialog";
 
+const PAGE_LIMIT = 10;
+
 export function CategoriesPage() {
   const [isOpenCreateDialog, setIsOpenCreateDialog] = useState<boolean>(false);
   const [editingCategory, setEditingCategory] = useState<CategoryModel>();
   const [deletingCategory, setDeletingCategory] = useState<CategoryModel>();
 
-  const listCategoriesQuery = useQuery(LIST_CATEGORIES_QUERY);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(PAGE_LIMIT);
+
+  const { data, previousData, loading, refetch } = useQuery(LIST_CATEGORIES_QUERY, {
+    variables: { page, limit },
+  });
+
   const [createCategoryMutation] = useMutation(CREATE_CATEGORY_MUTATION);
   const [upateCategoryMutation] = useMutation(UPDATE_CATEGORY_MUTATION);
   const [deleteCategoryMutation] = useMutation(DELETE_CATEGORY_MUTATION);
 
-  const categories = listCategoriesQuery.data?.listCategories;
+  const isFirstLoading = loading && !previousData;
+
+  const currentData = data ?? previousData;
+
+  const categories = currentData?.listCategories.items;
+  const pagination = currentData?.listCategories.pagination;
 
   const totalTransactionsCount = categories?.reduce((prev, cur) => prev + cur.transactionsCount, 0);
   const mostUsedCategory = categories?.reduce<CategoryModel | undefined>(
@@ -44,7 +59,7 @@ export function CategoriesPage() {
   const handleCreateCategory = async (data: CreateCategoryInput, form: UseFormReturn<CreateCategoryInput>) => {
     try {
       await createCategoryMutation({ variables: { data } });
-      await listCategoriesQuery.refetch();
+      await refetch();
       setIsOpenCreateDialog(false);
       form.reset();
     } catch (error) {
@@ -62,7 +77,7 @@ export function CategoriesPage() {
   ) => {
     try {
       await upateCategoryMutation({ variables: { categoryId, data } });
-      await listCategoriesQuery.refetch();
+      await refetch();
       setEditingCategory(undefined);
       form.reset();
     } catch (error) {
@@ -76,7 +91,7 @@ export function CategoriesPage() {
   const handleDeleteCategory = async (categoryId: CategoryModel["id"]) => {
     try {
       await deleteCategoryMutation({ variables: { categoryId } });
-      await listCategoriesQuery.refetch();
+      await refetch();
       setDeletingCategory(undefined);
     } catch (error) {
       toast.error("Falha ao excluir categoria", { description: getErrorMessage(error) });
@@ -84,7 +99,7 @@ export function CategoriesPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="flex flex-1 flex-col space-y-8">
       <CreateCategoryDialog
         open={isOpenCreateDialog}
         onOpenChange={setIsOpenCreateDialog}
@@ -116,7 +131,7 @@ export function CategoriesPage() {
       </header>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {listCategoriesQuery.loading ? (
+        {isFirstLoading ? (
           Array.from({ length: 3 }).map((_, index) => (
             <Skeleton key={`dashboard-card-skeleton-${index}`} className="h-27" />
           ))
@@ -148,20 +163,40 @@ export function CategoriesPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-        {listCategoriesQuery.loading
-          ? Array.from({ length: 5 }).map((_, index) => (
-              <Skeleton key={`category-card-skeleton-${index}`} className="h-52" />
-            ))
-          : categories?.map((category) => (
-              <CategoryCard
-                key={category.id}
-                category={category}
-                onEdit={setEditingCategory}
-                onDelete={setDeletingCategory}
-              />
-            ))}
-      </div>
+      {!isFirstLoading && categories?.length === 0 ? (
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <TagIcon className="size-5" />
+            </EmptyMedia>
+            <EmptyTitle>Nenhuma categoria encontrada</EmptyTitle>
+            <EmptyDescription>Crie uma nova categoria para começar a organizar suas transações.</EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <Button onClick={() => setIsOpenCreateDialog(true)}>
+              <PlusIcon />
+              <span>Criar categoria</span>
+            </Button>
+          </EmptyContent>
+        </Empty>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          {isFirstLoading
+            ? Array.from({ length: 5 }).map((_, index) => (
+                <Skeleton key={`category-card-skeleton-${index}`} className="h-52" />
+              ))
+            : categories?.map((category) => (
+                <CategoryCard
+                  key={category.id}
+                  category={category}
+                  onEdit={setEditingCategory}
+                  onDelete={setDeletingCategory}
+                />
+              ))}
+        </div>
+      )}
+
+      <Pagination pagination={pagination} onPageChange={setPage} isLoading={isFirstLoading} className="mt-auto" />
     </div>
   );
 }

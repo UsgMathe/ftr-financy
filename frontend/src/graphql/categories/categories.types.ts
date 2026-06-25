@@ -1,4 +1,5 @@
 import type { CreateCategoryInput, UpdateCategoryInput } from "@/schemas/categories/categories.schema";
+import type { PaginatedQueryData } from "../graphql.types";
 import type { CategoryModel } from "./category.model";
 
 export interface CreateCategoryMutationData {
@@ -19,7 +20,7 @@ export interface UpdateCategoryMutationVariables {
 }
 
 export interface ListCategoriesQueryData {
-  listCategories: Array<CategoryModel>;
+  listCategories: PaginatedQueryData<CategoryModel>;
 }
 
 export interface DeleteCategoryMutationData {

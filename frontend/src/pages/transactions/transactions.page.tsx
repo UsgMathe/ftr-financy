@@ -5,16 +5,29 @@ import { LIST_TRANSACTIONS_QUERY } from "@/graphql/transactions/transactions.que
 import { useQuery } from "@apollo/client/react";
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
+import { Pagination } from "../../components/pagination";
 import { getTransactionsColumns } from "./components/transactions-columns";
-import { TransactionsPagination } from "./components/transactions-pagination";
-import { Card, CardContent } from "@/components/ui/card";
+
+const PAGE_LIMIT = 8;
 
 export function TransactionsPage() {
   const [isOpenCreateDialog, setIsOpenCreateDialog] = useState<boolean>(false);
 
-  const listTransactionsQuery = useQuery(LIST_TRANSACTIONS_QUERY);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(PAGE_LIMIT);
 
-  const transactions = listTransactionsQuery.data?.listTransactions || [];
+  const { data, previousData, loading } = useQuery(LIST_TRANSACTIONS_QUERY, {
+    variables: { page, limit },
+    notifyOnNetworkStatusChange: true,
+  });
+
+  const isFirstLoading = loading && !previousData;
+  const isFetching = loading && !!previousData;
+
+  const currentData = data ?? previousData;
+
+  const transactions = currentData?.listTransactions.items ?? [];
+  const pagination = currentData?.listTransactions.pagination;
 
   const transactionsColumns = getTransactionsColumns({ onEdit: () => {}, onDelete: () => {} });
 
@@ -30,9 +43,12 @@ export function TransactionsPage() {
       </header>
 
       <DataTable
-        columns={transactionsColumns}
+        isLoading={isFirstLoading}
+        isFetching={isFetching}
         data={transactions}
-        pagination={<TransactionsPagination page={1} onPageChange={() => {}} totalItems={3} totalPages={1} />}
+        columns={transactionsColumns}
+        skeletonRows={PAGE_LIMIT}
+        pagination={<Pagination pagination={pagination} onPageChange={setPage} isLoading={isFirstLoading} />}
       />
     </div>
   );

@@ -6,9 +6,9 @@ interface LayoutProps extends ComponentProps<"div"> {}
 
 export function Layout({ className, ...props }: LayoutProps) {
   return (
-    <div className="min-h-dvh bg-gray-100">
+    <div className="flex min-h-dvh flex-col bg-gray-100">
       <NavBar />
-      <div className={cn("px-4 py-12 sm:px-12", className)} {...props} />
+      <div className={cn("flex flex-1 flex-col px-4 py-12 sm:px-12", className)} {...props} />
     </div>
   );
 }
