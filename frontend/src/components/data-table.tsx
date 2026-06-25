@@ -34,7 +34,7 @@ export function DataTable<TData, TValue>({
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="h-16">
+              <TableRow key={headerGroup.id} className="h-14">
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id} className="text-muted-foreground text-xs font-medium tracking-wide">
                     {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
@@ -46,7 +46,7 @@ export function DataTable<TData, TValue>({
 
           <TableBody>
             {Array.from({ length: skeletonRows }).map((_, rowIndex) => (
-              <TableRow key={rowIndex} className="h-24">
+              <TableRow key={rowIndex} className="h-10">
                 {columns.map((_, colIndex) => (
                   <TableCell key={colIndex}>
                     <Skeleton className="h-5 w-full rounded-md" />
@@ -76,7 +76,7 @@ export function DataTable<TData, TValue>({
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="h-16">
+            <TableRow key={headerGroup.id} className="h-14">
               {headerGroup.headers.map((header) => (
                 <TableHead key={header.id} className="text-muted-foreground text-xs font-medium tracking-wide">
                   {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
@@ -89,7 +89,7 @@ export function DataTable<TData, TValue>({
         <TableBody>
           {table.getRowModel().rows.length ? (
             table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} className="h-24">
+              <TableRow key={row.id} className="h-10">
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                 ))}
@@ -97,7 +97,7 @@ export function DataTable<TData, TValue>({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
+              <TableCell colSpan={columns.length} className="h-10 text-center">
                 Nenhuma transação encontrada.
               </TableCell>
             </TableRow>
