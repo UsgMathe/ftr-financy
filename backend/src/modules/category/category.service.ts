@@ -112,8 +112,10 @@ export class CategoryService {
       include: { user: true, _count: { select: { transactions: true } } },
     });
 
-    if (!category && throwError)
-      throw new NotFoundError('Categoria não encontrada');
+    if (!category) {
+      if (throwError) throw new NotFoundError('Categoria não encontrada');
+      return null;
+    }
 
     return { ...category, transactionsCount: category._count.transactions };
   }
