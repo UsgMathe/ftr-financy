@@ -89,7 +89,7 @@ type Query {
   getUser: UserModel!
 
   """Listar as categorias"""
-  listCategories(limit: Int! = 10, page: Int! = 1): PaginatedCategoriesModel!
+  listCategories(limit: Int = 10, page: Int = 1): PaginatedCategoriesModel!
   listTransactions(limit: Int = 10, page: Int = 1): PaginatedTransactionsModel!
 }
 
