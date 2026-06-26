@@ -38,7 +38,8 @@ export function TransactionsPage() {
 
   const listTransactionsQuery = useQuery(LIST_TRANSACTIONS_QUERY, {
     variables: { page, limit: PAGE_LIMIT, filters: transactionsFilters },
-    fetchPolicy: "network-only",
+    refetchOn: { windowFocus: true },
+    fetchPolicy: "cache-and-network",
   });
 
   const { listCategoriesQuery, loadMoreCategories } = usePaginatedCategoriesQuery();

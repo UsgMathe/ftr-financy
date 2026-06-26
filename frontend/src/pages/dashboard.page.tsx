@@ -31,12 +31,16 @@ export function DashboardPage() {
         },
       },
     },
+    refetchOn: { windowFocus: true },
+    fetchPolicy: "cache-and-network",
   });
 
   const recentTransactions = listTransactionsQuery.data?.listTransactions.items;
 
   const mostUsedCategoriesQuery = useQuery(LIST_CATEGORIES_QUERY, {
     variables: { limit: 5, filters: { orderBy: { field: CategoryOrderFieldEnum.TRANSACTIONS_COUNT } } },
+    refetchOn: { windowFocus: true },
+    fetchPolicy: "cache-and-network",
   });
 
   const mostUsedCategories = mostUsedCategoriesQuery.data?.listCategories.items;

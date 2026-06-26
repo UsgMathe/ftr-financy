@@ -29,6 +29,8 @@ export function CategoriesPage() {
 
   const listCategoriesQuery = useQuery(LIST_CATEGORIES_QUERY, {
     variables: { page, limit },
+    refetchOn: { windowFocus: true },
+    fetchPolicy: "cache-and-network",
   });
 
   const isFirstLoading = listCategoriesQuery.loading && !listCategoriesQuery.previousData;

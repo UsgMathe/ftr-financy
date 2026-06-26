@@ -42,6 +42,8 @@ export function UpdateTransactionDialog({
       page: 1,
       limit,
     },
+    refetchOn: { windowFocus: true },
+    fetchPolicy: "cache-and-network",
   });
 
   const categories = listCategoriesQuery.data?.listCategories.items || [];
