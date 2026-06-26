@@ -16,6 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Field } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { APP_ROUTES_PATHS } from "./routes/app-routes-paths";
 
 export function SigninPage() {
   const signin = useAuthStore((store) => store.signin);
@@ -89,7 +90,7 @@ export function SigninPage() {
 
             <p className="text-muted-foreground text-center text-sm">Ainda não tem uma conta?</p>
 
-            <Link to="/signup">
+            <Link to={APP_ROUTES_PATHS.SIGNUP}>
               <Button variant="outline" className="w-full" disabled={form.formState.isSubmitting}>
                 <UserPlus2Icon />
                 <span>Criar conta</span>

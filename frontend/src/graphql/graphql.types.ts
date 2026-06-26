@@ -9,3 +9,8 @@ export interface PaginatedQueryVariables {
   page?: number;
   limit?: number;
 }
+
+export enum OrderDirectionEnum {
+  ASC = "ASC",
+  DESC = "DESC",
+}

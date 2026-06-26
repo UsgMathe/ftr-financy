@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { getErrorMessage } from "@/utils/error.utils";
 import { toast } from "sonner";
+import { APP_ROUTES_PATHS } from "./routes/app-routes-paths";
 
 export function SignupPage() {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ export function SignupPage() {
     try {
       await signup(data);
       toast.success("Conta criada", { description: "Você já pode fazer o login." });
-      navigate("/signin");
+      navigate(APP_ROUTES_PATHS.SIGNIN);
     } catch (error) {
       toast.error("Falha ao criar conta", { description: getErrorMessage(error, "Tente novamente mais tarde.") });
     }
@@ -92,7 +93,7 @@ export function SignupPage() {
 
             <p className="text-muted-foreground text-center text-sm">Já tem uma conta?</p>
 
-            <Link to="/signin">
+            <Link to={APP_ROUTES_PATHS.SIGNIN}>
               <Button variant="outline" className="w-full" disabled={form.formState.isSubmitting}>
                 <LogInIcon />
                 <span>Fazer login</span>

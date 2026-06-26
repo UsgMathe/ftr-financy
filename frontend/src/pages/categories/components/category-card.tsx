@@ -36,7 +36,8 @@ export function CategoryCard({ category, onEdit, onDelete }: CategoryCardProps) 
         <CategoryBadge color={category.color} title={category.title} />
 
         <p className="text-muted-foreground text-sm">
-          {category.transactionsCount} ite{category.transactionsCount > 1 ? "ns" : "m"}
+          {category.transactionsCount} ite
+          {category.transactionsCount > 1 || category.transactionsCount == 0 ? "ns" : "m"}
         </p>
       </CardFooter>
     </Card>

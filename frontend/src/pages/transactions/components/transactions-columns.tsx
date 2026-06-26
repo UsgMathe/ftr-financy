@@ -1,13 +1,14 @@
+import { cn } from "@/lib/utils";
 import { type ColumnDef } from "@tanstack/react-table";
-import { ArrowDownCircle, ArrowUpCircle, EditIcon, TrashIcon } from "lucide-react";
+import { format, parseISO } from "date-fns";
+import { ArrowDownCircleIcon, ArrowUpCircleIcon, EditIcon, TrashIcon } from "lucide-react";
+
+import { TransactionTypeEnum, type TransactionModel } from "@/graphql/transactions/transaction.model";
 
 import { CategoryBadge } from "@/components/category-badge";
 import { IconBlock } from "@/components/icon-block";
+import { AmountText } from "@/components/transaction-amount-text";
 import { Button } from "@/components/ui/button";
-import { TransactionTypeEnum, type TransactionModel } from "@/graphql/transactions/transaction.model";
-import { cn } from "@/lib/utils";
-import { formatCurrency } from "@/utils/format-currency";
-import { format, parseISO } from "date-fns";
 
 type TransactionsColumnsProps = {
   onEdit: (transaction: TransactionModel) => void;
@@ -53,9 +54,9 @@ export function getTransactionsColumns({ onEdit, onDelete }: TransactionsColumns
         return (
           <div className={"flex items-center justify-center gap-2"}>
             {isIncome ? (
-              <ArrowUpCircle className="text-primary h-4 w-4" />
+              <ArrowUpCircleIcon className="text-primary h-4 w-4" />
             ) : (
-              <ArrowDownCircle className="text-red-base h-4 w-4" />
+              <ArrowDownCircleIcon className="text-red-base h-4 w-4" />
             )}
 
             <p className={cn(isIncome ? "text-green-dark" : "text-red-dark")}>{isIncome ? "Entrada" : "Saída"}</p>
@@ -66,15 +67,7 @@ export function getTransactionsColumns({ onEdit, onDelete }: TransactionsColumns
     {
       accessorKey: "amount",
       header: () => <div className="text-right">VALOR</div>,
-      cell: ({ row }) => {
-        const isIncome = row.original.type === TransactionTypeEnum.INCOME;
-
-        return (
-          <div className="text-right text-base font-semibold">
-            {isIncome ? "+" : "-"} {formatCurrency(row.original.amount)}
-          </div>
-        );
-      },
+      cell: ({ row }) => <AmountText amount={row.original.amount} type={row.original.type} />,
     },
     {
       id: "actions",

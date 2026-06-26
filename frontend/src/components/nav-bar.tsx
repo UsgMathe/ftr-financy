@@ -1,4 +1,5 @@
 import { Logo } from "@/assets";
+import { APP_ROUTES_PATHS } from "@/pages/routes/app-routes-paths";
 import { useAuthStore } from "@/stores/auth.store";
 import { getInitials } from "@/utils/get-initials";
 import type { ReactNode } from "react";
@@ -13,14 +14,14 @@ export function NavBar() {
 
   return (
     <nav className="sticky top-0 z-1 flex items-center justify-between border-b border-gray-200 bg-white px-12 py-4">
-      <NavLink to="/">
+      <NavLink to={APP_ROUTES_PATHS.DASHBOARD}>
         <Logo className="w-fit max-w-24" />
       </NavLink>
 
       <div className="flex items-center gap-5">
-        <HeaderLink to="/">Dashboard</HeaderLink>
-        <HeaderLink to="/transactions">Transações</HeaderLink>
-        <HeaderLink to="/categories">Categorias</HeaderLink>
+        <HeaderLink to={APP_ROUTES_PATHS.DASHBOARD}>Dashboard</HeaderLink>
+        <HeaderLink to={APP_ROUTES_PATHS.TRANSACTIONS}>Transações</HeaderLink>
+        <HeaderLink to={APP_ROUTES_PATHS.CATEGORIES}>Categorias</HeaderLink>
       </div>
 
       <Avatar size="lg">

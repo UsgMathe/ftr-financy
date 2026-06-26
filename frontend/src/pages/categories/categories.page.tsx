@@ -6,6 +6,7 @@ import { LIST_CATEGORIES_QUERY } from "@/graphql/categories/categories.queries";
 import { type CategoryModel } from "@/graphql/categories/category.model";
 
 import { DashboardCard } from "@/components/dashboard-card";
+import { LoadingContainer } from "@/components/loading-container";
 import { PageHeader } from "@/components/page-title";
 import { Pagination } from "@/components/pagination";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,6 @@ import { CategoryCard } from "./components/category-card";
 import { CreateCategoryDialog } from "./components/create-category-dialog";
 import { DeleteCategoryDialog } from "./components/delete-category-dialog";
 import { UpdateCategoryDialog } from "./components/update-category-dialog";
-import { LoadingContainer } from "@/components/loading-container";
 
 const PAGE_LIMIT = 10;
 
@@ -56,7 +56,7 @@ export function CategoriesPage() {
         </Button>
       </header>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {isFirstLoading ? (
           Array.from({ length: 3 }).map((_, index) => (
             <Skeleton key={`dashboard-card-skeleton-${index}`} className="h-27" />
@@ -65,23 +65,23 @@ export function CategoriesPage() {
           <>
             <DashboardCard
               icon={"TagIcon"}
-              title={categories?.length}
-              description="TOTAL DE CATEGORIAS"
+              value={categories?.length}
+              label="TOTAL DE CATEGORIAS"
               iconColor="var(--color-gray-700)"
             />
 
             <DashboardCard
               icon={"ArrowUpDownIcon"}
-              title={totalTransactionsCount}
-              description="TOTAL DE TRANSAÇÕES"
+              value={totalTransactionsCount}
+              label="TOTAL DE TRANSAÇÕES"
               iconColor="var(--color-purple-base)"
             />
 
             {mostUsedCategory && (
               <DashboardCard
                 icon={mostUsedCategory.icon}
-                title={mostUsedCategory?.title}
-                description="CATEGORIA MAIS UTILIZADA"
+                value={mostUsedCategory?.title}
+                label="CATEGORIA MAIS UTILIZADA"
                 iconColor={mostUsedCategory?.color}
               />
             )}

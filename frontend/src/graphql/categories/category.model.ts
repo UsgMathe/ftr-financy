@@ -9,4 +9,5 @@ export interface CategoryModel {
   createdAt: string;
   updatedAt: string;
   transactionsCount: number;
+  totalAmount: number;
 }

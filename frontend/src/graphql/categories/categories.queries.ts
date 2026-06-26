@@ -1,24 +1,17 @@
 import { gql, type TypedDocumentNode } from "@apollo/client";
-import type { PaginatedQueryVariables } from "../graphql.types";
-import type { ListCategoriesQueryData } from "./categories.types";
+import type { ListCategoriesQueryData, ListCategoriesQueryVariables } from "./categories.types";
 
-export const LIST_CATEGORIES_QUERY: TypedDocumentNode<ListCategoriesQueryData, PaginatedQueryVariables> = gql`
-  query ListCategories($limit: Int, $page: Int) {
-    listCategories(limit: $limit, page: $page) {
+export const LIST_CATEGORIES_QUERY: TypedDocumentNode<ListCategoriesQueryData, ListCategoriesQueryVariables> = gql`
+  query ListCategories($limit: Int, $page: Int, $filters: ListCategoriesFilterInput) {
+    listCategories(limit: $limit, page: $page, filters: $filters) {
       items {
         id
         title
         description
         color
         icon
-        user {
-          id
-          name
-          email
-          createdAt
-          updatedAt
-        }
         transactionsCount
+        totalAmount
         createdAt
         updatedAt
       }

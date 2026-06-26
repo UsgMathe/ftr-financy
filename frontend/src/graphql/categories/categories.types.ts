@@ -1,6 +1,18 @@
 import type { CreateCategoryInput, UpdateCategoryInput } from "@/schemas/categories/categories.schema";
-import type { PaginatedQueryData } from "../graphql.types";
+import type { OrderDirectionEnum, PaginatedQueryData, PaginatedQueryVariables } from "../graphql.types";
 import type { CategoryModel } from "./category.model";
+
+export enum CategoryOrderFieldEnum {
+  TITLE = "TITLE",
+  CREATED_AT = "CREATED_AT",
+  UPDATED_AT = "UPDATED_AT",
+  TRANSACTIONS_COUNT = "TRANSACTIONS_COUNT",
+}
+
+export interface CategoryOrderByVariables {
+  field?: CategoryOrderFieldEnum;
+  direction?: OrderDirectionEnum;
+}
 
 export interface CreateCategoryMutationData {
   createCategory: CategoryModel;
@@ -21,6 +33,15 @@ export interface UpdateCategoryMutationVariables {
 
 export interface ListCategoriesQueryData {
   listCategories: PaginatedQueryData<CategoryModel>;
+}
+
+export interface ListCategoryFilters {
+  search?: string;
+  orderBy?: CategoryOrderByVariables;
+}
+
+export interface ListCategoriesQueryVariables extends PaginatedQueryVariables {
+  filters?: ListCategoryFilters;
 }
 
 export interface DeleteCategoryMutationData {
