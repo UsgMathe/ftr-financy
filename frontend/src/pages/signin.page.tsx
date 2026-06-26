@@ -30,7 +30,6 @@ export function SigninPage() {
 
   const onSubmit = async (data: SigninInput) => {
     await signin(data).catch((error) => {
-      console.log(error.message);
       toast.error("Falha ao logar", { description: error.message });
     });
   };

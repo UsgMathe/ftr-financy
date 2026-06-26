@@ -1,9 +1,9 @@
 import { type ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import { Loader2Icon } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { LoadingContainer } from "./loading-container";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -64,46 +64,39 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="bg-background relative overflow-hidden rounded-2xl border">
-      {isFetching && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-white/60 backdrop-blur-[1px]">
-          <div className="flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-md">
-            <Loader2Icon className="text-muted-foreground size-4 animate-spin" />
-            <span className="text-muted-foreground text-sm">Carregando...</span>
-          </div>
-        </div>
-      )}
-
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="h-14">
-              {headerGroup.headers.map((header) => (
-                <TableHead key={header.id} className="text-muted-foreground text-xs font-medium tracking-wide">
-                  {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-
-        <TableBody>
-          {table.getRowModel().rows.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} className="h-10">
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+      <LoadingContainer isLoading={isFetching}>
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id} className="h-14">
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id} className="text-muted-foreground text-xs font-medium tracking-wide">
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
                 ))}
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-10 text-center">
-                Nenhuma transação encontrada.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+            ))}
+          </TableHeader>
+
+          <TableBody>
+            {table.getRowModel().rows.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id} className="h-10">
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-10 text-center">
+                  Nenhuma transação encontrada.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </LoadingContainer>
 
       {pagination && <div className="border-t px-6">{pagination}</div>}
     </div>

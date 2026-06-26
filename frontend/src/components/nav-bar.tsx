@@ -12,7 +12,7 @@ export function NavBar() {
   if (!isAuthenticated) return;
 
   return (
-    <nav className="sticky top-0 flex items-center justify-between border-b border-gray-200 bg-white px-12 py-4">
+    <nav className="sticky top-0 z-1 flex items-center justify-between border-b border-gray-200 bg-white px-12 py-4">
       <NavLink to="/">
         <Logo className="w-fit max-w-24" />
       </NavLink>
