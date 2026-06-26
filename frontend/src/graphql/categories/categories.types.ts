@@ -15,7 +15,7 @@ export interface UpdateCategoryMutationData {
 }
 
 export interface UpdateCategoryMutationVariables {
-  categoryId: string;
+  categoryId: CategoryModel["id"];
   data: UpdateCategoryInput;
 }
 
@@ -28,5 +28,5 @@ export interface DeleteCategoryMutationData {
 }
 
 export interface DeleteCategoryMutationVariables {
-  categoryId: string;
+  categoryId: CategoryModel["id"];
 }

@@ -8,50 +8,42 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { DELETE_CATEGORY_MUTATION } from "@/graphql/categories/categories.mutations";
 import type { CategoryModel } from "@/graphql/categories/category.model";
-import { useState, type MouseEvent } from "react";
+import { getErrorMessage } from "@/utils/error.utils";
+import { useMutation } from "@apollo/client/react";
+import { Loader2Icon } from "lucide-react";
+import type { MouseEvent } from "react";
+import { toast } from "sonner";
 
-interface DeleteCategoryConfirmationDialogProps {
+interface DeleteCategoryDialogProps {
+  category?: CategoryModel;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
-
-  category?: CategoryModel;
-  onConfirm?: (category: CategoryModel) => any;
-  onCancel?: (category: CategoryModel) => any;
+  onSuccess?: (data?: boolean) => void;
+  onError?: (error: unknown) => void;
 }
-export function DeleteCategoryConfirmationDialog({
-  open,
-  onOpenChange,
+export function DeleteCategoryDialog({ open, category, onOpenChange, onSuccess, onError }: DeleteCategoryDialogProps) {
+  const [deleteMutation, { loading }] = useMutation(DELETE_CATEGORY_MUTATION);
 
-  category,
-  onConfirm,
-  onCancel,
-}: DeleteCategoryConfirmationDialogProps) {
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const handleDeleteCategory = async (e: MouseEvent) => {
+    if (!category) return;
+    e.preventDefault();
+    try {
+      const response = await deleteMutation({ variables: { categoryId: category.id } });
+      onSuccess?.(response.data?.deleteCategory);
+      onOpenChange?.(false);
+    } catch (error) {
+      onError?.(error);
+      toast.error("Falha ao excluir categoria", {
+        description: getErrorMessage(error),
+        position: "top-center",
+      });
+    }
+  };
 
   const canDelete = category?.transactionsCount === 0;
   const transactionsCount = category?.transactionsCount || 0;
-
-  const handleConfirm = async (e: MouseEvent) => {
-    setIsLoading(true);
-    e.preventDefault();
-    try {
-      if (category) await onConfirm?.(category);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleCancel = async (e: MouseEvent) => {
-    setIsLoading(true);
-    e.preventDefault();
-    try {
-      if (category) await onCancel?.(category);
-    } finally {
-      setIsLoading(false);
-      onOpenChange?.(false);
-    }
-  };
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -83,17 +75,20 @@ export function DeleteCategoryConfirmationDialog({
         <AlertDialogFooter>
           {canDelete ? (
             <>
-              <AlertDialogCancel onClick={handleCancel} disabled={isLoading}>
-                Cancelar
-              </AlertDialogCancel>
-              <AlertDialogAction onClick={handleConfirm} variant="destructive" disabled={isLoading}>
-                {isLoading ? "Excluindo" : "Excluir"}
+              <AlertDialogCancel disabled={loading}>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDeleteCategory} variant="destructive" disabled={loading}>
+                {loading ? (
+                  <>
+                    <Loader2Icon className="animate-spin" />
+                    <span>Excluindo</span>
+                  </>
+                ) : (
+                  "Excluir"
+                )}
               </AlertDialogAction>
             </>
           ) : (
-            <AlertDialogCancel onClick={handleCancel} disabled={isLoading}>
-              Entendi
-            </AlertDialogCancel>
+            <AlertDialogCancel disabled={loading}>Entendi</AlertDialogCancel>
           )}
         </AlertDialogFooter>
       </AlertDialogContent>

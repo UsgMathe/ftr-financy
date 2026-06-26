@@ -17,5 +17,4 @@ export const createCategorySchema = z.object({
 export type CreateCategoryInput = z.input<typeof createCategorySchema>;
 
 export const updateCategorySchema = createCategorySchema.partial();
-
 export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>;

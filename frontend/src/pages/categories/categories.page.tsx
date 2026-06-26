@@ -1,17 +1,9 @@
-import { useMutation, useQuery } from "@apollo/client/react";
+import { useQuery } from "@apollo/client/react";
 import { PlusIcon, TagIcon } from "lucide-react";
 import { useState } from "react";
-import type { UseFormReturn } from "react-hook-form";
-import { toast } from "sonner";
 
-import {
-  CREATE_CATEGORY_MUTATION,
-  DELETE_CATEGORY_MUTATION,
-  UPDATE_CATEGORY_MUTATION,
-} from "@/graphql/categories/categories.mutations";
 import { LIST_CATEGORIES_QUERY } from "@/graphql/categories/categories.queries";
 import { type CategoryModel } from "@/graphql/categories/category.model";
-import type { CreateCategoryInput, UpdateCategoryInput } from "@/schemas/categories/categories.schema";
 
 import { DashboardCard } from "@/components/dashboard-card";
 import { PageHeader } from "@/components/page-title";
@@ -19,11 +11,11 @@ import { Pagination } from "@/components/pagination";
 import { Button } from "@/components/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getErrorMessage } from "@/utils/error.utils";
 import { CategoryCard } from "./components/category-card";
 import { CreateCategoryDialog } from "./components/create-category-dialog";
-import { DeleteCategoryConfirmationDialog } from "./components/delete-category-confirmation-dialog";
+import { DeleteCategoryDialog } from "./components/delete-category-dialog";
 import { UpdateCategoryDialog } from "./components/update-category-dialog";
+import { LoadingContainer } from "@/components/loading-container";
 
 const PAGE_LIMIT = 10;
 
@@ -35,17 +27,14 @@ export function CategoriesPage() {
   const [page, setPage] = useState(1);
   const [limit] = useState(PAGE_LIMIT);
 
-  const { data, previousData, loading, refetch } = useQuery(LIST_CATEGORIES_QUERY, {
+  const listCategoriesQuery = useQuery(LIST_CATEGORIES_QUERY, {
     variables: { page, limit },
   });
 
-  const [createCategoryMutation] = useMutation(CREATE_CATEGORY_MUTATION);
-  const [upateCategoryMutation] = useMutation(UPDATE_CATEGORY_MUTATION);
-  const [deleteCategoryMutation] = useMutation(DELETE_CATEGORY_MUTATION);
+  const isFirstLoading = listCategoriesQuery.loading && !listCategoriesQuery.previousData;
+  const isFetching = listCategoriesQuery.loading && !!listCategoriesQuery.previousData;
 
-  const isFirstLoading = loading && !previousData;
-
-  const currentData = data ?? previousData;
+  const currentData = listCategoriesQuery.data ?? listCategoriesQuery.previousData;
 
   const categories = currentData?.listCategories.items;
   const pagination = currentData?.listCategories.pagination;
@@ -56,71 +45,8 @@ export function CategoriesPage() {
     undefined,
   );
 
-  const handleCreateCategory = async (data: CreateCategoryInput, form: UseFormReturn<CreateCategoryInput>) => {
-    try {
-      await createCategoryMutation({ variables: { data } });
-      await refetch();
-      setIsOpenCreateDialog(false);
-      form.reset();
-    } catch (error) {
-      toast.error("Falha ao criar categoria", {
-        description: getErrorMessage(error),
-        position: "top-center",
-      });
-    }
-  };
-
-  const handleUpdateCategory = async (
-    categoryId: CategoryModel["id"],
-    data: UpdateCategoryInput,
-    form: UseFormReturn<UpdateCategoryInput>,
-  ) => {
-    try {
-      await upateCategoryMutation({ variables: { categoryId, data } });
-      await refetch();
-      setEditingCategory(undefined);
-      form.reset();
-    } catch (error) {
-      toast.error("Falha ao editar categoria", {
-        description: getErrorMessage(error),
-        position: "top-center",
-      });
-    }
-  };
-
-  const handleDeleteCategory = async (categoryId: CategoryModel["id"]) => {
-    try {
-      await deleteCategoryMutation({ variables: { categoryId } });
-      await refetch();
-      setDeletingCategory(undefined);
-    } catch (error) {
-      toast.error("Falha ao excluir categoria", { description: getErrorMessage(error) });
-    }
-  };
-
   return (
     <div className="flex flex-1 flex-col space-y-8">
-      <CreateCategoryDialog
-        open={isOpenCreateDialog}
-        onOpenChange={setIsOpenCreateDialog}
-        onSubmit={handleCreateCategory}
-      />
-
-      <UpdateCategoryDialog
-        open={!!editingCategory}
-        category={editingCategory}
-        onOpenChange={(open) => !open && setEditingCategory(undefined)}
-        onSubmit={handleUpdateCategory}
-      />
-
-      <DeleteCategoryConfirmationDialog
-        category={deletingCategory}
-        open={!!deletingCategory}
-        onOpenChange={(open) => !open && setDeletingCategory(undefined)}
-        onConfirm={({ id }) => handleDeleteCategory(id)}
-        onCancel={() => setDeletingCategory(undefined)}
-      />
-
       <header className="flex items-center justify-between gap-4">
         <PageHeader title="Categorias" description="Organize suas transações por categorias" />
 
@@ -180,23 +106,45 @@ export function CategoriesPage() {
           </EmptyContent>
         </Empty>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {isFirstLoading
-            ? Array.from({ length: 5 }).map((_, index) => (
-                <Skeleton key={`category-card-skeleton-${index}`} className="h-52" />
-              ))
-            : categories?.map((category) => (
-                <CategoryCard
-                  key={category.id}
-                  category={category}
-                  onEdit={setEditingCategory}
-                  onDelete={setDeletingCategory}
-                />
-              ))}
-        </div>
+        <LoadingContainer isLoading={isFetching}>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {isFirstLoading
+              ? Array.from({ length: 5 }).map((_, index) => (
+                  <Skeleton key={`category-card-skeleton-${index}`} className="h-52" />
+                ))
+              : categories?.map((category) => (
+                  <CategoryCard
+                    key={category.id}
+                    category={category}
+                    onEdit={setEditingCategory}
+                    onDelete={setDeletingCategory}
+                  />
+                ))}
+          </div>
+        </LoadingContainer>
       )}
 
       <Pagination pagination={pagination} onPageChange={setPage} isLoading={isFirstLoading} className="mt-auto" />
+
+      <CreateCategoryDialog
+        open={isOpenCreateDialog}
+        onOpenChange={setIsOpenCreateDialog}
+        onSuccess={() => listCategoriesQuery.refetch()}
+      />
+
+      <UpdateCategoryDialog
+        open={!!editingCategory}
+        category={editingCategory}
+        onOpenChange={(open) => !open && setEditingCategory(undefined)}
+        onSuccess={() => listCategoriesQuery.refetch()}
+      />
+
+      <DeleteCategoryDialog
+        category={deletingCategory}
+        open={!!deletingCategory}
+        onOpenChange={(open) => !open && setDeletingCategory(undefined)}
+        onSuccess={() => listCategoriesQuery.refetch()}
+      />
     </div>
   );
 }
