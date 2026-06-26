@@ -44,7 +44,7 @@ model Transaction {
   id String @id @default(uuid(7))
 
   description String
-  date        DateTime
+  date        String
   amount      Decimal
   type        TransactionType
 

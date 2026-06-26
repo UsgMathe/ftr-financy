@@ -1,9 +1,14 @@
-
+import { TransactionType } from '@/generated/prisma/enums';
 import { UserModel } from '@/modules/auth/models/user.model';
 import { CategoryModel } from '@/modules/category/models/category.model';
-import { registerEnumType } from 'type-graphql';
-import { Field, Float, GraphQLISODateTime, ID, ObjectType } from 'type-graphql';
-import { TransactionType } from '@/generated/prisma/enums';
+import {
+  Field,
+  Float,
+  GraphQLISODateTime,
+  ID,
+  ObjectType,
+  registerEnumType,
+} from 'type-graphql';
 
 registerEnumType(TransactionType, {
   name: 'TransactionType',
@@ -17,8 +22,8 @@ export class TransactionModel {
   @Field(() => String)
   description!: string;
 
-  @Field(() => GraphQLISODateTime)
-  date!: Date;
+  @Field(() => String)
+  date!: string;
 
   @Field(() => Float)
   amount!: number;

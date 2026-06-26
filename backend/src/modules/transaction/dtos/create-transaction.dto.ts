@@ -1,12 +1,12 @@
 import { Transaction, TransactionType } from '@/generated/prisma/client';
 import { Decimal } from '@prisma/client/runtime/index-browser';
 import {
-  IsDate,
   IsEnum,
   IsNotEmpty,
   IsNumber,
   IsPositive,
   IsString,
+  Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -21,10 +21,13 @@ export class CreateTransactionInput implements Partial<Transaction> {
   @MaxLength(100, { message: 'A descrição deve ter no máximo 100 caracteres' })
   description!: string;
 
-  @Field(() => Date)
-  @IsDate({ message: 'A data deve ser uma data válida' })
+  @Field(() => String)
+  @IsString({ message: 'A data deve ser uma string' })
   @IsNotEmpty({ message: 'A data é obrigatória' })
-  date!: Date;
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, {
+    message: 'A data deve estar no formato yyyy-MM-dd',
+  })
+  date!: string;
 
   @Field(() => Float)
   @IsNumber(
