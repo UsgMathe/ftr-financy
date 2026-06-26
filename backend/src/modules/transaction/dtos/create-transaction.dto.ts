@@ -36,7 +36,7 @@ export class CreateTransactionInput implements Partial<Transaction> {
   )
   @IsPositive({ message: 'O valor deve ser maior que 0' })
   @IsNotEmpty({ message: 'O valor é obrigatório' })
-  amount?: Decimal;
+  amount!: Decimal;
 
   @Field(() => TransactionType)
   @IsEnum(TransactionType, {

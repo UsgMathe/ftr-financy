@@ -12,6 +12,7 @@ import { GqlUser } from '@/graphql/decorators/user.decorator';
 import { IsAuth } from '@/shared/middlewares/is-auth.middleware';
 import { CategoryService } from './category.service';
 import { CreateCategoryInput } from './dtos/create-category.dto';
+import { ListCategoriesFilterInput } from './dtos/list-categories.dto';
 import { UpdateCategoryInput } from './dtos/update-category.dto';
 import { CategoryModel } from './models/category.model';
 import { PaginatedCategoriesModel } from './models/paginated-categories.model';
@@ -58,11 +59,18 @@ export class CategoryResolver {
     description: 'Listar as categorias',
   })
   async listCategories(
-    @GqlUser() user: User,
-    @Arg('page', () => Int, { defaultValue: 1, nullable: true }) page: number,
+    @GqlUser()
+    user: User,
+
+    @Arg('page', () => Int, { defaultValue: 1, nullable: true })
+    page: number,
+
     @Arg('limit', () => Int, { defaultValue: 10, nullable: true })
     limit: number,
+
+    @Arg('filters', () => ListCategoriesFilterInput, { nullable: true })
+    filters?: ListCategoriesFilterInput,
   ) {
-    return this.categoryService.listCategories(user.id, page, limit);
+    return this.categoryService.listCategories(user.id, page, limit, filters);
   }
 }

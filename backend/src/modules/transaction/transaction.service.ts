@@ -4,10 +4,11 @@ import { prismaClient } from '@/prisma/prisma.client';
 import { BadRequestError } from '@/shared/errors/bad-request.error';
 import { NotFoundError } from '@/shared/errors/not-found.error';
 import { buildPaginationMeta } from '@/shared/graphql/create-paginated-model.factory';
+import { OrderDirection } from '@/shared/graphql/order-direction.enum';
 import { User } from '@prisma/client';
 import { CategoryService } from '../category/category.service';
 import { CreateTransactionInput } from './dtos/create-transaction.dto';
-import { ListTransactionsFilterInput } from './dtos/list-transactions-filter.dto';
+import { ListTransactionsFilterInput } from './dtos/list-transactions.dto';
 import { UpdateTransactionInput } from './dtos/update-transaction.dto';
 
 export class TransactionService {
@@ -73,6 +74,10 @@ export class TransactionService {
       if (filters.endDate) where.date.lte = filters.endDate;
     }
 
+    const orderBy = filters?.orderBy
+      ? { [filters.orderBy.field]: filters.orderBy.direction }
+      : { date: OrderDirection.DESC };
+
     const [items, totalItems] = await prismaClient.$transaction([
       prismaClient.transaction.findMany({
         where,
@@ -82,14 +87,10 @@ export class TransactionService {
         },
         skip,
         take: safeLimit,
-        orderBy: {
-          date: 'desc',
-        },
+        orderBy,
       }),
 
-      prismaClient.transaction.count({
-        where,
-      }),
+      prismaClient.transaction.count({ where }),
     ]);
 
     return {

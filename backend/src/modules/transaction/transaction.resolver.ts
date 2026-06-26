@@ -10,7 +10,7 @@ import {
   UseMiddleware,
 } from 'type-graphql';
 import { CreateTransactionInput } from './dtos/create-transaction.dto';
-import { ListTransactionsFilterInput } from './dtos/list-transactions-filter.dto';
+import { ListTransactionsFilterInput } from './dtos/list-transactions.dto';
 import { UpdateTransactionInput } from './dtos/update-transaction.dto';
 import { PaginatedTransactionsModel } from './models/paginated-transactions.model';
 import { TransactionModel } from './models/transaction.model';
@@ -82,7 +82,6 @@ export class TransactionResolver {
     @Arg('filters', () => ListTransactionsFilterInput, { nullable: true })
     filters?: ListTransactionsFilterInput,
   ) {
-    console.log({ filters });
     return this.transactionService.listTransactions(
       user.id,
       page,

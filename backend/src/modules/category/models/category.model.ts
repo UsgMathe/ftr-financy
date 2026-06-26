@@ -1,6 +1,6 @@
 import { Category } from '@/generated/prisma/client';
 import { UserModel } from '@/modules/auth/models/user.model';
-import { Field, GraphQLISODateTime, ID, ObjectType } from 'type-graphql';
+import { Field, Float, GraphQLISODateTime, ID, ObjectType } from 'type-graphql';
 
 @ObjectType()
 export class CategoryModel implements Partial<Category> {
@@ -24,6 +24,9 @@ export class CategoryModel implements Partial<Category> {
 
   @Field(() => Number)
   transactionsCount!: number;
+
+  @Field(() => Float)
+  totalAmount!: number;
 
   @Field(() => GraphQLISODateTime)
   createdAt!: Date;

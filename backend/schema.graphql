@@ -10,9 +10,22 @@ type CategoryModel {
   icon: String!
   id: ID!
   title: String!
+  totalAmount: Float!
   transactionsCount: Float!
   updatedAt: DateTimeISO!
   user: UserModel!
+}
+
+input CategoryOrderByInput {
+  direction: OrderDirection = DESC
+  field: CategoryOrderField! = TITLE
+}
+
+enum CategoryOrderField {
+  CREATED_AT
+  TITLE
+  TRANSACTIONS_COUNT
+  UPDATED_AT
 }
 
 input CreateCategoryInput {
@@ -35,9 +48,15 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 """
 scalar DateTimeISO
 
+input ListCategoriesFilterInput {
+  orderBy: CategoryOrderByInput
+  search: String
+}
+
 input ListTransactionsFilterInput {
   categoryId: String
   endDate: String
+  orderBy: TransactionOrderByInput
   search: String
   startDate: String
   type: TransactionType
@@ -69,6 +88,11 @@ type Mutation {
   updateUser(data: UpdateUserInput!): UserModel!
 }
 
+enum OrderDirection {
+  ASC
+  DESC
+}
+
 type PaginatedCategoriesModel {
   items: [CategoryModel!]!
   pagination: PaginationMetaModel!
@@ -97,7 +121,7 @@ type Query {
   getUser: UserModel!
 
   """Listar as categorias"""
-  listCategories(limit: Int = 10, page: Int = 1): PaginatedCategoriesModel!
+  listCategories(filters: ListCategoriesFilterInput, limit: Int = 10, page: Int = 1): PaginatedCategoriesModel!
   listTransactions(filters: ListTransactionsFilterInput, limit: Int = 10, page: Int = 1): PaginatedTransactionsModel!
 }
 
@@ -128,6 +152,18 @@ type TransactionModel {
   type: TransactionType!
   updatedAt: DateTimeISO!
   user: UserModel!
+}
+
+input TransactionOrderByInput {
+  direction: OrderDirection = DESC
+  field: TransactionOrderField! = DATE
+}
+
+enum TransactionOrderField {
+  AMOUNT
+  CREATED_AT
+  DATE
+  UPDATED_AT
 }
 
 enum TransactionType {

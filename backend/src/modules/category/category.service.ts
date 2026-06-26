@@ -1,10 +1,21 @@
-import { Category, User } from '@/generated/prisma/client';
+import {
+  Category,
+  Prisma,
+  TransactionType,
+  User,
+} from '@/generated/prisma/client';
+import { CategoryWhereInput } from '@/generated/prisma/models';
 import { prismaClient } from '@/prisma/prisma.client';
 import { BadRequestError } from '@/shared/errors/bad-request.error';
 import { ConflictError } from '@/shared/errors/conflict.error';
 import { NotFoundError } from '@/shared/errors/not-found.error';
 import { buildPaginationMeta } from '@/shared/graphql/create-paginated-model.factory';
+import { OrderDirection } from '@/shared/graphql/order-direction.enum';
 import { CreateCategoryInput } from './dtos/create-category.dto';
+import {
+  CategoryOrderFieldEnum,
+  ListCategoriesFilterInput,
+} from './dtos/list-categories.dto';
 import { UpdateCategoryInput } from './dtos/update-category.dto';
 
 export class CategoryService {
@@ -31,31 +42,120 @@ export class CategoryService {
     userId: User['id'],
     page?: number,
     limit?: number,
+    filters?: ListCategoriesFilterInput,
   ) {
     const safePage = page ?? 1;
     const safeLimit = limit ?? 10;
     const skip = (safePage - 1) * safeLimit;
 
+    const where: CategoryWhereInput = {
+      userId,
+    };
+
+    if (filters?.search) {
+      where.OR = [
+        {
+          title: {
+            contains: filters.search,
+          },
+        },
+        {
+          description: {
+            contains: filters.search,
+          },
+        },
+      ];
+    }
+
+    const direction = filters?.orderBy?.direction ?? OrderDirection.DESC;
+
+    let orderBy: Prisma.CategoryOrderByWithRelationInput;
+
+    switch (filters?.orderBy?.field) {
+      case CategoryOrderFieldEnum.TITLE:
+        orderBy = { title: direction };
+        break;
+
+      case CategoryOrderFieldEnum.CREATED_AT:
+        orderBy = { createdAt: direction };
+        break;
+
+      case CategoryOrderFieldEnum.UPDATED_AT:
+        orderBy = { updatedAt: direction };
+        break;
+
+      case CategoryOrderFieldEnum.TRANSACTIONS_COUNT:
+        orderBy = {
+          transactions: {
+            _count: direction,
+          },
+        };
+        break;
+
+      default:
+        orderBy = { title: OrderDirection.ASC };
+    }
+
     const [categories, totalItems] = await prismaClient.$transaction([
       prismaClient.category.findMany({
-        where: { userId },
-        include: { user: true, _count: { select: { transactions: true } } },
+        where,
+        include: {
+          user: true,
+          _count: {
+            select: {
+              transactions: true,
+            },
+          },
+        },
         skip,
         take: safeLimit,
+        orderBy,
       }),
+
       prismaClient.category.count({
-        where: { userId },
+        where,
       }),
     ]);
+
+    const categoryIds = categories.map(c => c.id);
+
+    const transactions = await prismaClient.transaction.findMany({
+      where: {
+        userId,
+        categoryId: {
+          in: categoryIds,
+        },
+      },
+      select: {
+        categoryId: true,
+        amount: true,
+        type: true,
+      },
+    });
+
+    const totalsMap = new Map<string, number>();
+
+    for (const { categoryId, amount, type } of transactions) {
+      const current = totalsMap.get(categoryId) ?? 0;
+
+      totalsMap.set(
+        categoryId,
+        current + (type === TransactionType.INCOME ? +amount : -amount),
+      );
+    }
 
     const items = categories.map(cat => ({
       ...cat,
       transactionsCount: cat._count.transactions,
+      totalAmount: totalsMap.get(cat.id) ?? 0,
     }));
 
     return {
       items,
-      pagination: buildPaginationMeta(totalItems, { page: safePage, limit: safeLimit }),
+      pagination: buildPaginationMeta(totalItems, {
+        page: safePage,
+        limit: safeLimit,
+      }),
     };
   }
 
@@ -66,7 +166,7 @@ export class CategoryService {
   ) {
     const category = await this.validateCategoryExists(userId, id);
 
-    if (data.title && data.title !== category.title) {
+    if (data.title && data.title !== category?.title) {
       await this.validateCategoryExistsByTitle(userId, data.title);
     }
 
