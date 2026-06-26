@@ -1,37 +1,44 @@
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { useState } from "react";
+import { format, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
 
 interface DatePickerProps {
-  value?: Date;
-  onChange?: (date?: Date) => void;
   label?: string;
   helper?: string;
   disabled?: boolean;
   invalid?: boolean;
+  value?: string;
+  onChange?: (date?: string) => void;
 }
+
+const parseDate = (value?: string) => (value ? parseISO(value) : undefined);
+
+const formatDate = (date?: Date) => (date ? format(date, "yyyy-MM-dd") : undefined);
 
 export function DatePicker({ value, onChange, label = "Data", helper, disabled, invalid }: DatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
 
+  const selected = parseDate(value);
+
   return (
     <Field data-invalid={invalid}>
-      <FieldLabel htmlFor="date-picker-simple">{label}</FieldLabel>
+      <FieldLabel htmlFor="date-picker">{label}</FieldLabel>
+
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild disabled={disabled}>
           <Button
+            id="date-picker"
             variant="outline"
-            id="date-picker-simple"
-            className={cn("w-full justify-start text-left font-normal", !value && "text-muted-foreground")}
             disabled={disabled}
+            className={cn("w-full justify-start text-left font-normal", !value && "text-muted-foreground")}
           >
-            {value ? format(value, "PPP", { locale: ptBR }) : <span>Selecione</span>}
+            {selected ? format(selected, "PPP", { locale: ptBR }) : "Selecione"}
           </Button>
         </PopoverTrigger>
 
@@ -40,9 +47,9 @@ export function DatePicker({ value, onChange, label = "Data", helper, disabled, 
             mode="single"
             locale={ptBR}
             className="w-full"
-            selected={value}
+            selected={selected}
             onSelect={(date) => {
-              onChange?.(date);
+              onChange?.(formatDate(date));
               setIsOpen(false);
             }}
           />

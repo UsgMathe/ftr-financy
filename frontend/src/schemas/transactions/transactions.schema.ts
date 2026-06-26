@@ -8,7 +8,7 @@ export const createTransactionSchema = z.object({
     .trim()
     .min(5, "A descrição deve ter no mínimo 5 caracteres")
     .max(100, "A descrição deve ter no máximo 100 caracteres"),
-  date: z.date("A data é obrigatória"),
+  date: z.string("A data é obrigatória"),
   amount: z
     .number({
       message: "Informe um valor",
@@ -21,3 +21,6 @@ export const createTransactionSchema = z.object({
 });
 
 export type CreateTransactionInput = z.input<typeof createTransactionSchema>;
+
+export const updateTransactionSchema = createTransactionSchema.partial();
+export type UpdateTransactionInput = z.input<typeof updateTransactionSchema>;

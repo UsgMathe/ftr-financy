@@ -5,13 +5,13 @@ import { CategoryBadge } from "@/components/category-badge";
 import { IconBlock } from "@/components/icon-block";
 import { Button } from "@/components/ui/button";
 import { TransactionTypeEnum, type TransactionModel } from "@/graphql/transactions/transaction.model";
-import { formatCurrency } from "@/utils/format-currency";
-import dayjs from "dayjs";
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/utils/format-currency";
+import { format, parseISO } from "date-fns";
 
 type TransactionsColumnsProps = {
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
+  onEdit: (transaction: TransactionModel) => void;
+  onDelete: (transaction: TransactionModel) => void;
 };
 
 export function getTransactionsColumns({ onEdit, onDelete }: TransactionsColumnsProps): ColumnDef<TransactionModel>[] {
@@ -30,7 +30,9 @@ export function getTransactionsColumns({ onEdit, onDelete }: TransactionsColumns
       accessorKey: "date",
       header: () => <div className="text-center">DATA</div>,
       cell: ({ row }) => {
-        return <div className="text-muted-foreground text-center">{dayjs(row.original.date).format("DD/MM/YY")}</div>;
+        const date = typeof row.original.date === "string" ? parseISO(row.original.date) : row.original.date;
+
+        return <div className="text-muted-foreground text-center">{format(date, "dd/MM/yy")}</div>;
       },
     },
     {
@@ -79,11 +81,11 @@ export function getTransactionsColumns({ onEdit, onDelete }: TransactionsColumns
       header: () => <div className="text-right">AÇÕES</div>,
       cell: ({ row }) => (
         <div className="flex justify-end gap-2">
-          <Button variant="outline" size="icon" onClick={() => onDelete(row.original.id)}>
+          <Button variant="outline" size="icon" onClick={() => onDelete(row.original)}>
             <TrashIcon className="text-destructive size-4" />
           </Button>
 
-          <Button variant="outline" size="icon" onClick={() => onEdit(row.original.id)}>
+          <Button variant="outline" size="icon" onClick={() => onEdit(row.original)}>
             <EditIcon className="size-4" />
           </Button>
         </div>
