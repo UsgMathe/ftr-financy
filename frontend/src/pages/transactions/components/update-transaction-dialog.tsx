@@ -1,15 +1,7 @@
 import { useMutation, useQuery } from "@apollo/client/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2Icon } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { toast } from "sonner";
-
-import type { ListCategoriesQueryData } from "@/graphql/categories/categories.types";
-import type { PaginatedQueryVariables } from "@/graphql/graphql.types";
-import type { TransactionModel } from "@/graphql/transactions/transaction.model";
-import { CREATE_TRANSACTION_MUTATION } from "@/graphql/transactions/transactions.mutations";
-import { type CreateTransactionInput, createTransactionSchema } from "@/schemas/transactions/transactions.schema";
-import { getErrorMessage } from "@/utils/error.utils";
 
 import { CurrencyInputField } from "@/components/currency-input-field";
 import { DatePicker } from "@/components/date-picker";
@@ -17,33 +9,78 @@ import { InputField } from "@/components/input-field";
 import { SelectField, type SelectFieldItem } from "@/components/select-field";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { LIST_CATEGORIES_QUERY } from "@/graphql/categories/categories.queries";
+import { TransactionTypeEnum, type TransactionModel } from "@/graphql/transactions/transaction.model";
+import { UPDATE_TRANSACTION_MUTATION } from "@/graphql/transactions/transactions.mutations";
+import { updateTransactionSchema, type UpdateTransactionInput } from "@/schemas/transactions/transactions.schema";
+import { getErrorMessage } from "@/utils/error.utils";
+import { Loader2Icon } from "lucide-react";
+import { toast } from "sonner";
 import { TransactionTypeSwitch } from "./transaction-type-switch";
 
-interface CreateTransactionDialogProps {
-  listCategoriesQuery: ReturnType<typeof useQuery<ListCategoriesQueryData, PaginatedQueryVariables>>;
+const PAGE_LIMIT = 10;
+
+interface UpdateTransactionDialogProps {
+  transaction?: TransactionModel;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   onSuccess?: (data?: TransactionModel) => void;
   onError?: (error: unknown) => void;
-  loadMoreCategories?: () => void;
 }
 
-export function CreateTransactionDialog({
-  listCategoriesQuery,
+export function UpdateTransactionDialog({
+  transaction,
   open,
   onOpenChange,
   onSuccess,
   onError,
-  loadMoreCategories,
-}: CreateTransactionDialogProps) {
-  const form = useForm<CreateTransactionInput>({
-    resolver: zodResolver(createTransactionSchema),
+}: UpdateTransactionDialogProps) {
+  const [limit] = useState(PAGE_LIMIT);
+
+  const listCategoriesQuery = useQuery(LIST_CATEGORIES_QUERY, {
+    variables: {
+      page: 1,
+      limit,
+    },
+  });
+
+  const categories = listCategoriesQuery.data?.listCategories.items || [];
+  const categoriesPagination = listCategoriesQuery.data?.listCategories.pagination;
+  const hasNextCategoriesPage = categoriesPagination?.hasNextPage ?? false;
+  const isFetchingMoreCategories = !!categories.length && listCategoriesQuery.loading;
+
+  const loadMoreCategories = async () => {
+    if (!hasNextCategoriesPage || listCategoriesQuery.loading) {
+      return;
+    }
+
+    await listCategoriesQuery.fetchMore({
+      variables: {
+        page: (categoriesPagination?.page ?? 1) + 1,
+        limit,
+      },
+      updateQuery: (previousResult, { fetchMoreResult }) => {
+        if (!fetchMoreResult) return previousResult;
+
+        return {
+          ...previousResult,
+          listCategories: {
+            ...fetchMoreResult.listCategories,
+            items: [...previousResult.listCategories.items, ...fetchMoreResult.listCategories.items],
+          },
+        };
+      },
+    });
+  };
+
+  const form = useForm<UpdateTransactionInput>({
+    resolver: zodResolver(updateTransactionSchema),
     defaultValues: {
-      description: "",
-      amount: null!,
-      categoryId: "",
-      date: null!,
-      type: null!,
+      description: undefined,
+      amount: undefined,
+      categoryId: undefined,
+      date: undefined,
+      type: undefined,
     },
   });
 
@@ -52,41 +89,48 @@ export function CreateTransactionDialog({
     form.reset();
   };
 
-  const [createTransactionMutation] = useMutation(CREATE_TRANSACTION_MUTATION);
+  const [updateTransactionMutation] = useMutation(UPDATE_TRANSACTION_MUTATION);
 
-  const handleCreateTransaction = async (data: CreateTransactionInput) => {
+  const handleUpdateTransaction = async (data: UpdateTransactionInput) => {
+    if (!transaction) return;
+
     try {
-      const response = await createTransactionMutation({ variables: { data } });
-      onSuccess?.(response.data?.createTransaction);
-      handleOpenChange?.(false);
-      form.reset();
+      const response = await updateTransactionMutation({ variables: { transactionId: transaction.id, data } });
+      onSuccess?.(response.data?.updateTransaction);
+      handleOpenChange(false);
     } catch (error) {
       onError?.(error);
-      toast.error("Falha ao registrar transação", {
+      toast.error("Falha ao editar transação", {
         description: getErrorMessage(error),
         position: "top-center",
       });
     }
   };
-  const isSubmitting = form.formState.isSubmitting;
 
-  const categories = listCategoriesQuery.data?.listCategories.items || [];
-  const categoriesPagination = listCategoriesQuery.data?.listCategories.pagination;
-  const hasNextCategoriesPage = categoriesPagination?.hasNextPage ?? false;
-  const isFetchingMoreCategories = !!categories.length && listCategoriesQuery.loading;
+  const isSubmitting = form.formState.isSubmitting;
 
   const categoriesOptions: SelectFieldItem[] = categories?.map((category) => ({
     label: category.title,
     value: category.id,
   }));
 
+  useEffect(() => {
+    form.reset({
+      description: transaction?.description,
+      amount: transaction?.amount,
+      categoryId: transaction?.category.id,
+      date: transaction?.date,
+      type: transaction?.type ? TransactionTypeEnum[transaction?.type] : undefined,
+    });
+  }, [transaction]);
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
-        <form onSubmit={form.handleSubmit(handleCreateTransaction)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(handleUpdateTransaction)} className="space-y-6">
           <DialogHeader>
-            <DialogTitle>Nova transação</DialogTitle>
-            <DialogDescription>Registre sua despesa ou receita</DialogDescription>
+            <DialogTitle>Editar transação</DialogTitle>
+            <DialogDescription>Edite as informações da transação</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
