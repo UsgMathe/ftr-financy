@@ -1,6 +1,9 @@
 import { GraphQLError } from 'graphql';
 
 export class AppError extends GraphQLError {
+  public statusCode: number;
+  public code: string;
+
   constructor(
     message: string,
     code: string,
@@ -15,5 +18,8 @@ export class AppError extends GraphQLError {
         ...extensions,
       },
     });
+
+    this.code = code;
+    this.statusCode = statusCode;
   }
 }
