@@ -10,6 +10,7 @@ import {
   UseMiddleware,
 } from 'type-graphql';
 import { CreateTransactionInput } from './dtos/create-transaction.dto';
+import { ListTransactionsFilterInput } from './dtos/list-transactions-filter.dto';
 import { UpdateTransactionInput } from './dtos/update-transaction.dto';
 import { PaginatedTransactionsModel } from './models/paginated-transactions.model';
 import { TransactionModel } from './models/transaction.model';
@@ -22,44 +23,71 @@ export class TransactionResolver {
 
   @Mutation(() => TransactionModel)
   async createTransaction(
-    @Arg('data', () => CreateTransactionInput) data: CreateTransactionInput,
-    @GqlUser() user: User,
+    @Arg('data', () => CreateTransactionInput)
+    data: CreateTransactionInput,
+
+    @GqlUser()
+    user: User,
   ) {
     return this.transactionService.createTransaction(user.id, data);
   }
 
   @Mutation(() => TransactionModel)
   async updateTransaction(
-    @Arg('id', () => String) id: string,
-    @Arg('data', () => UpdateTransactionInput) data: UpdateTransactionInput,
-    @GqlUser() user: User,
+    @Arg('id', () => String)
+    id: string,
+
+    @Arg('data', () => UpdateTransactionInput)
+    data: UpdateTransactionInput,
+
+    @GqlUser()
+    user: User,
   ) {
     return this.transactionService.updateTransaction(user.id, id, data);
   }
 
   @Mutation(() => Boolean)
   async deleteTransaction(
-    @Arg('id', () => String) id: string,
-    @GqlUser() user: User,
+    @Arg('id', () => String)
+    id: string,
+
+    @GqlUser()
+    user: User,
   ) {
     return this.transactionService.deleteTransaction(user.id, id);
   }
 
   @Query(() => TransactionModel)
   async getTransaction(
-    @Arg('id', () => String) id: string,
-    @GqlUser() user: User,
+    @Arg('id', () => String)
+    id: string,
+
+    @GqlUser()
+    user: User,
   ) {
     return this.transactionService.findTransaction(user.id, id);
   }
 
   @Query(() => PaginatedTransactionsModel)
   async listTransactions(
-    @GqlUser() user: User,
-    @Arg('page', () => Int, { defaultValue: 1, nullable: true }) page?: number,
+    @GqlUser()
+    user: User,
+
+    @Arg('page', () => Int, { defaultValue: 1, nullable: true })
+    page?: number,
+
     @Arg('limit', () => Int, { defaultValue: 10, nullable: true })
     limit?: number,
+
+    @Arg('filters', () => ListTransactionsFilterInput, { nullable: true })
+    filters?: ListTransactionsFilterInput,
   ) {
-    return this.transactionService.listTransactions(user.id, page, limit);
+    console.log({ filters });
+    return this.transactionService.listTransactions(
+      user.id,
+      page,
+      limit,
+      filters,
+    );
   }
 }

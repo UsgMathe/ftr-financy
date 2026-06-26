@@ -25,7 +25,7 @@ input CreateCategoryInput {
 input CreateTransactionInput {
   amount: Float!
   categoryId: ID!
-  date: DateTimeISO!
+  date: String!
   description: String!
   type: TransactionType!
 }
@@ -34,6 +34,14 @@ input CreateTransactionInput {
 A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.This scalar is serialized to a string in ISO 8601 format and parsed from a string in ISO 8601 format.
 """
 scalar DateTimeISO
+
+input ListTransactionsFilterInput {
+  categoryId: String
+  endDate: String
+  search: String
+  startDate: String
+  type: TransactionType
+}
 
 type Mutation {
   """Criar uma categoria"""
@@ -90,7 +98,7 @@ type Query {
 
   """Listar as categorias"""
   listCategories(limit: Int = 10, page: Int = 1): PaginatedCategoriesModel!
-  listTransactions(limit: Int = 10, page: Int = 1): PaginatedTransactionsModel!
+  listTransactions(filters: ListTransactionsFilterInput, limit: Int = 10, page: Int = 1): PaginatedTransactionsModel!
 }
 
 input SigninInput {
@@ -114,7 +122,7 @@ type TransactionModel {
   amount: Float!
   category: CategoryModel!
   createdAt: DateTimeISO!
-  date: DateTimeISO!
+  date: String!
   description: String!
   id: ID!
   type: TransactionType!
@@ -137,7 +145,7 @@ input UpdateCategoryInput {
 input UpdateTransactionInput {
   amount: Float
   categoryId: ID
-  date: DateTimeISO
+  date: String
   description: String
   type: TransactionType
 }
