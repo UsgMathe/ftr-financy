@@ -38,15 +38,10 @@ export class UserService {
   async updateUser(userId: User['id'], data: UpdateUserInput) {
     await this.validateUserExists(userId);
 
-    if (data.email) {
-      await this.validateUserExistsByEmail(data.email);
-    }
-
     return prismaClient.user.update({
       where: { id: userId },
       data: {
         name: data.name,
-        email: data.email,
       },
     });
   }

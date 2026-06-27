@@ -190,7 +190,6 @@ input UpdateTransactionInput {
 }
 
 input UpdateUserInput {
-  email: String
   name: String
 }
 
