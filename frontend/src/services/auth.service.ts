@@ -1,5 +1,5 @@
 import { apolloClient } from "@/api/apollo";
-import { SIGNIN_MUTATION, SIGNUP_MUTATION } from "@/graphql/auth/auth.mutations";
+import { SIGNIN_MUTATION, SIGNOUT_MUTATION, SIGNUP_MUTATION } from "@/graphql/auth/auth.mutations";
 import { GET_USER_QUERY } from "@/graphql/users/user.queries";
 import type { SigninInput } from "@/schemas/auth/signin.schema";
 import type { SignupInput } from "@/schemas/auth/signup.schema";
@@ -30,6 +30,16 @@ export const authService = {
       const { data } = await apolloClient.query({ query: GET_USER_QUERY });
 
       return data?.getUser;
+    } catch (error) {
+      handleError(error);
+    }
+  },
+
+  async signout() {
+    try {
+      const { data } = await apolloClient.mutate({ mutation: SIGNOUT_MUTATION });
+
+      return data?.signout;
     } catch (error) {
       handleError(error);
     }

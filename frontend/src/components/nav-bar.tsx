@@ -3,7 +3,7 @@ import { APP_ROUTES_PATHS } from "@/pages/routes/app-routes-paths";
 import { useAuthStore } from "@/stores/auth.store";
 import { getInitials } from "@/utils/get-initials";
 import type { ReactNode } from "react";
-import { NavLink, type To } from "react-router-dom";
+import { Link, NavLink, type To } from "react-router-dom";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 
 export function NavBar() {
@@ -24,9 +24,11 @@ export function NavBar() {
         <HeaderLink to={APP_ROUTES_PATHS.CATEGORIES}>Categorias</HeaderLink>
       </div>
 
-      <Avatar size="lg">
-        <AvatarFallback>{getInitials(user?.name)}</AvatarFallback>
-      </Avatar>
+      <Link to={APP_ROUTES_PATHS.PROFILE}>
+        <Avatar size="lg">
+          <AvatarFallback>{getInitials(user?.name)}</AvatarFallback>
+        </Avatar>
+      </Link>
     </nav>
   );
 }

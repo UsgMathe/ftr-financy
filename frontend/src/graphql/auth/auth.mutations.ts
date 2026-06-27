@@ -1,6 +1,7 @@
 import { gql, type TypedDocumentNode } from "@apollo/client";
 
 import type {
+  SiginoutMutationData,
   SigninMutationData,
   SigninMutationVariables,
   SignupMutationData,
@@ -32,5 +33,11 @@ export const SIGNIN_MUTATION: TypedDocumentNode<SigninMutationData, SigninMutati
         updatedAt
       }
     }
+  }
+`;
+
+export const SIGNOUT_MUTATION: TypedDocumentNode<SiginoutMutationData> = gql`
+  mutation Signout {
+    signout
   }
 `;

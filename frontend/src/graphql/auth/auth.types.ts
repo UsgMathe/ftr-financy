@@ -16,3 +16,7 @@ export interface SigninMutationData {
 export interface SigninMutationVariables {
   data: SigninInput;
 }
+
+export interface SiginoutMutationData {
+  signout: boolean;
+}

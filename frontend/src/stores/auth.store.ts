@@ -13,7 +13,9 @@ interface AuthStore {
 
   signin: (data: SigninInput) => Promise<SigninOutput | undefined>;
   signup: (data: SignupInput) => Promise<SignupOutput | undefined>;
-  signout: () => void;
+  signout: () => Promise<boolean | undefined>;
+
+  setUser: (data?: UserModel) => void;
 }
 
 export const useAuthStore = create<AuthStore>()(
@@ -21,6 +23,10 @@ export const useAuthStore = create<AuthStore>()(
     (set) => ({
       user: null,
       isAuthenticated: false,
+
+      setUser: (data?: UserModel) => {
+        set({ user: data });
+      },
 
       checkAuth: async () => {
         try {
@@ -56,11 +62,15 @@ export const useAuthStore = create<AuthStore>()(
         return response;
       },
 
-      signout: () => {
+      signout: async () => {
+        const response = await authService.signout();
+
         set({
           user: null,
           isAuthenticated: null,
         });
+
+        return response;
       },
     }),
     {

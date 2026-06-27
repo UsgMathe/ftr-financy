@@ -6,4 +6,6 @@ export const APP_ROUTES_PATHS = {
 
   CATEGORIES: "/categories",
   TRANSACTIONS: "/transactions",
+
+  PROFILE: "/profile",
 };

@@ -16,6 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Field } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { getErrorMessage } from "@/utils/error.utils";
 import { APP_ROUTES_PATHS } from "./routes/app-routes-paths";
 
 export function SigninPage() {
@@ -30,9 +31,11 @@ export function SigninPage() {
   });
 
   const onSubmit = async (data: SigninInput) => {
-    await signin(data).catch((error) => {
-      toast.error("Falha ao logar", { description: error.message });
-    });
+    try {
+      await signin(data);
+    } catch (error) {
+      toast.error("Falha ao logar", { description: getErrorMessage(error) });
+    }
   };
 
   return (
