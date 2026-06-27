@@ -45,8 +45,7 @@ export class CategoryService {
     filters?: ListCategoriesFilterInput,
   ) {
     const safePage = page ?? 1;
-    const safeLimit = limit ?? 10;
-    const skip = (safePage - 1) * safeLimit;
+    const skip = limit !== undefined ? (safePage - 1) * limit : undefined;
 
     const where: CategoryWhereInput = {
       userId,
@@ -69,38 +68,33 @@ export class CategoryService {
 
     const direction = filters?.orderBy?.direction ?? OrderDirection.DESC;
 
-    let orderBy: Prisma.CategoryOrderByWithRelationInput;
+    const orderBy: Prisma.CategoryOrderByWithRelationInput = (() => {
+      switch (filters?.orderBy?.field) {
+        case CategoryOrderFieldEnum.TITLE:
+          return { title: direction };
 
-    switch (filters?.orderBy?.field) {
-      case CategoryOrderFieldEnum.TITLE:
-        orderBy = { title: direction };
-        break;
+        case CategoryOrderFieldEnum.CREATED_AT:
+          return { createdAt: direction };
 
-      case CategoryOrderFieldEnum.CREATED_AT:
-        orderBy = { createdAt: direction };
-        break;
+        case CategoryOrderFieldEnum.UPDATED_AT:
+          return { updatedAt: direction };
 
-      case CategoryOrderFieldEnum.UPDATED_AT:
-        orderBy = { updatedAt: direction };
-        break;
+        case CategoryOrderFieldEnum.TRANSACTIONS_COUNT:
+          return {
+            transactions: {
+              _count: direction,
+            },
+          };
 
-      case CategoryOrderFieldEnum.TRANSACTIONS_COUNT:
-        orderBy = {
-          transactions: {
-            _count: direction,
-          },
-        };
-        break;
-
-      default:
-        orderBy = { title: OrderDirection.ASC };
-    }
+        default:
+          return { title: OrderDirection.ASC };
+      }
+    })();
 
     const [categories, totalItems] = await prismaClient.$transaction([
       prismaClient.category.findMany({
         where,
         include: {
-          user: true,
           _count: {
             select: {
               transactions: true,
@@ -108,7 +102,7 @@ export class CategoryService {
           },
         },
         skip,
-        take: safeLimit,
+        take: limit,
         orderBy,
       }),
 
@@ -117,45 +111,52 @@ export class CategoryService {
       }),
     ]);
 
-    const categoryIds = categories.map(c => c.id);
+    const categoryIds = categories.map(category => category.id);
 
-    const transactions = await prismaClient.transaction.findMany({
-      where: {
-        userId,
-        categoryId: {
-          in: categoryIds,
-        },
-      },
-      select: {
-        categoryId: true,
-        amount: true,
-        type: true,
-      },
-    });
+    const groupedTransactions =
+      categoryIds.length === 0
+        ? []
+        : await prismaClient.transaction.groupBy({
+            by: ['categoryId', 'type'],
+            where: {
+              userId,
+              categoryId: {
+                in: categoryIds,
+              },
+            },
+            _sum: {
+              amount: true,
+            },
+          });
 
     const totalsMap = new Map<string, number>();
 
-    for (const { categoryId, amount, type } of transactions) {
-      const current = totalsMap.get(categoryId) ?? 0;
+    for (const transaction of groupedTransactions) {
+      const current = totalsMap.get(transaction.categoryId) ?? 0;
+      const amount = Number(transaction._sum.amount ?? 0);
 
       totalsMap.set(
-        categoryId,
-        current + (type === TransactionType.INCOME ? +amount : -amount),
+        transaction.categoryId,
+        current +
+          (transaction.type === TransactionType.INCOME ? amount : -amount),
       );
     }
 
-    const items = categories.map(cat => ({
-      ...cat,
-      transactionsCount: cat._count.transactions,
-      totalAmount: totalsMap.get(cat.id) ?? 0,
+    const items = categories.map(({ _count, ...category }) => ({
+      ...category,
+      transactionsCount: _count.transactions,
+      totalAmount: totalsMap.get(category.id) ?? 0,
     }));
 
     return {
       items,
-      pagination: buildPaginationMeta(totalItems, {
-        page: safePage,
-        limit: safeLimit,
-      }),
+      pagination:
+        limit !== undefined
+          ? buildPaginationMeta(totalItems, {
+              page: safePage,
+              limit,
+            })
+          : undefined,
     };
   }
 

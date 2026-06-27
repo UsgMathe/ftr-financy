@@ -1,4 +1,4 @@
-import { Transaction } from '@/generated/prisma/client';
+import { Transaction, TransactionType } from '@/generated/prisma/client';
 import { TransactionWhereInput } from '@/generated/prisma/models';
 import { prismaClient } from '@/prisma/prisma.client';
 import { BadRequestError } from '@/shared/errors/bad-request.error';
@@ -50,9 +50,7 @@ export class TransactionService {
     filters?: ListTransactionsFilterInput,
   ) {
     const safePage = page ?? 1;
-    const safeLimit = limit ?? 10;
-
-    const skip = (safePage - 1) * safeLimit;
+    const skip = limit !== undefined ? (safePage - 1) * limit : undefined;
 
     const where: TransactionWhereInput = {
       userId,
@@ -78,27 +76,59 @@ export class TransactionService {
       ? { [filters.orderBy.field]: filters.orderBy.direction }
       : { date: OrderDirection.DESC };
 
-    const [items, totalItems] = await prismaClient.$transaction([
-      prismaClient.transaction.findMany({
-        where,
-        include: {
-          category: true,
-          user: true,
-        },
-        skip,
-        take: safeLimit,
-        orderBy,
-      }),
+    const [items, totalItems, totalIncome, totalExpense] =
+      await prismaClient.$transaction([
+        prismaClient.transaction.findMany({
+          where,
+          include: {
+            category: true,
+            user: true,
+          },
+          skip,
+          take: limit,
+          orderBy,
+        }),
 
-      prismaClient.transaction.count({ where }),
-    ]);
+        prismaClient.transaction.count({ where }),
+
+        prismaClient.transaction.aggregate({
+          where: {
+            ...where,
+            type: TransactionType.INCOME,
+          },
+          _sum: {
+            amount: true,
+          },
+        }),
+
+        prismaClient.transaction.aggregate({
+          where: {
+            ...where,
+            type: TransactionType.EXPENSE,
+          },
+          _sum: {
+            amount: true,
+          },
+        }),
+      ]);
+
+    const totalIncomeAmount = Number(totalIncome._sum.amount ?? 0);
+    const totalExpenseAmount = Number(totalExpense._sum.amount ?? 0);
+
+    const totalBalance = totalIncomeAmount - totalExpenseAmount;
 
     return {
       items,
-      pagination: buildPaginationMeta(totalItems, {
-        page: safePage,
-        limit: safeLimit,
-      }),
+      pagination:
+        limit !== undefined
+          ? buildPaginationMeta(totalItems, {
+              page: safePage,
+              limit,
+            })
+          : undefined,
+      totalIncomeAmount,
+      totalExpenseAmount,
+      totalBalance,
     };
   }
 

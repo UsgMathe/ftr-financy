@@ -101,6 +101,9 @@ type PaginatedCategoriesModel {
 type PaginatedTransactionsModel {
   items: [TransactionModel!]!
   pagination: PaginationMetaModel!
+  totalBalance: Float!
+  totalExpenseAmount: Float!
+  totalIncomeAmount: Float!
 }
 
 type PaginationMetaModel {
