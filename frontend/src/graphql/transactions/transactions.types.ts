@@ -24,7 +24,11 @@ export interface ListTransactionFilters {
 }
 
 export interface ListTransactionsQueryData {
-  listTransactions: PaginatedQueryData<TransactionModel>;
+  listTransactions: PaginatedQueryData<TransactionModel> & {
+    totalIncomeAmount: number;
+    totalExpenseAmount: number;
+    totalBalance: number;
+  };
 }
 
 export interface ListTransactionsQueryVariables extends PaginatedQueryVariables {

@@ -12,6 +12,9 @@ import { Pagination } from "@/components/pagination";
 import { Button } from "@/components/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CategoryOrderFieldEnum } from "@/graphql/categories/categories.types";
+import { OrderDirectionEnum } from "@/graphql/graphql.types";
+import { LIST_TRANSACTIONS_QUERY } from "@/graphql/transactions/transactions.queries";
 import { CategoryCard } from "./components/category-card";
 import { CreateCategoryDialog } from "./components/create-category-dialog";
 import { DeleteCategoryDialog } from "./components/delete-category-dialog";
@@ -29,9 +32,23 @@ export function CategoriesPage() {
 
   const listCategoriesQuery = useQuery(LIST_CATEGORIES_QUERY, {
     variables: { page, limit },
-    refetchOn: { windowFocus: true },
     fetchPolicy: "cache-and-network",
   });
+
+  const mostUserdCategoriesQuery = useQuery(LIST_CATEGORIES_QUERY, {
+    variables: {
+      limit: 1,
+      filters: { orderBy: { field: CategoryOrderFieldEnum.TRANSACTIONS_COUNT, direction: OrderDirectionEnum.DESC } },
+    },
+    fetchPolicy: "cache-and-network",
+  });
+
+  const transactionsCountQuery = useQuery(LIST_TRANSACTIONS_QUERY, {
+    variables: { limit: 1 },
+    fetchPolicy: "cache-and-network",
+  });
+
+  const mostUsedCategory = mostUserdCategoriesQuery.data?.listCategories.items[0];
 
   const isFirstLoading = listCategoriesQuery.loading && !listCategoriesQuery.previousData;
   const isFetching = listCategoriesQuery.loading && !!listCategoriesQuery.previousData;
@@ -41,11 +58,9 @@ export function CategoriesPage() {
   const categories = currentData?.listCategories.items;
   const pagination = currentData?.listCategories.pagination;
 
-  const totalTransactionsCount = categories?.reduce((prev, cur) => prev + cur.transactionsCount, 0);
-  const mostUsedCategory = categories?.reduce<CategoryModel | undefined>(
-    (prev, current) => (!prev || current.transactionsCount > prev.transactionsCount ? current : prev),
-    undefined,
-  );
+  const categoriesCount = currentData?.listCategories.pagination.totalItems;
+
+  const totalTransactionsCount = transactionsCountQuery.data?.listTransactions.pagination.totalItems;
 
   return (
     <div className="flex flex-1 flex-col space-y-8">
@@ -67,7 +82,7 @@ export function CategoriesPage() {
           <>
             <DashboardCard
               icon={"TagIcon"}
-              value={categories?.length}
+              value={categoriesCount}
               label="TOTAL DE CATEGORIAS"
               iconColor="var(--color-gray-700)"
             />
@@ -77,6 +92,7 @@ export function CategoriesPage() {
               value={totalTransactionsCount}
               label="TOTAL DE TRANSAÇÕES"
               iconColor="var(--color-purple-base)"
+              isLoading={transactionsCountQuery.loading}
             />
 
             {mostUsedCategory && (
@@ -85,6 +101,7 @@ export function CategoriesPage() {
                 value={mostUsedCategory?.title}
                 label="CATEGORIA MAIS UTILIZADA"
                 iconColor={mostUsedCategory?.color}
+                isLoading={mostUserdCategoriesQuery.loading}
               />
             )}
           </>

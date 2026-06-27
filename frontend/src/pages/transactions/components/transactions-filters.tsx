@@ -41,7 +41,7 @@ export function TransactionsFilters({
 
       return { ...prev, search: newSearchValue };
     });
-  }, [debouncedSearch, setFilters]);
+  }, [debouncedSearch]);
 
   const categories = listCategoriesQuery.data?.listCategories.items || [];
   const categoriesPagination = listCategoriesQuery.data?.listCategories.pagination;
@@ -54,8 +54,8 @@ export function TransactionsFilters({
   }));
 
   const transactionTypesOptions = [
-    { label: "Despesa", value: TransactionTypeEnum.EXPENSE },
-    { label: "Receita", value: TransactionTypeEnum.INCOME },
+    { label: "Entrada", value: TransactionTypeEnum.INCOME },
+    { label: "Saída", value: TransactionTypeEnum.EXPENSE },
   ];
 
   const dateRange = {

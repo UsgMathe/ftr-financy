@@ -42,7 +42,6 @@ export function UpdateTransactionDialog({
       page: 1,
       limit,
     },
-    refetchOn: { windowFocus: true },
     fetchPolicy: "cache-and-network",
   });
 

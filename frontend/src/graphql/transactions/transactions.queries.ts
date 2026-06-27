@@ -31,6 +31,9 @@ export const LIST_TRANSACTIONS_QUERY: TypedDocumentNode<ListTransactionsQueryDat
           hasNextPage
           hasPreviousPage
         }
+        totalIncomeAmount
+        totalExpenseAmount
+        totalBalance
       }
     }
   `;

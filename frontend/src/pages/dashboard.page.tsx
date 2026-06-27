@@ -19,10 +19,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { LIST_CATEGORIES_QUERY } from "@/graphql/categories/categories.queries";
 import { CategoryOrderFieldEnum } from "@/graphql/categories/categories.types";
+import { TransactionTypeEnum } from "@/graphql/transactions/transaction.model";
+import { endOfMonth, format, startOfMonth } from "date-fns";
 import { CreateTransactionDialog } from "./transactions/components/create-transaction-dialog";
 
+const now = new Date();
+
 export function DashboardPage() {
-  const listTransactionsQuery = useQuery(LIST_TRANSACTIONS_QUERY, {
+  const listAllTransactionsQuery = useQuery(LIST_TRANSACTIONS_QUERY, {
+    fetchPolicy: "cache-and-network",
+  });
+
+  const listRecentTransactionsQuery = useQuery(LIST_TRANSACTIONS_QUERY, {
     variables: {
       limit: 5,
       filters: {
@@ -31,47 +39,78 @@ export function DashboardPage() {
         },
       },
     },
-    refetchOn: { windowFocus: true },
     fetchPolicy: "cache-and-network",
   });
 
-  const recentTransactions = listTransactionsQuery.data?.listTransactions.items;
-
-  const mostUsedCategoriesQuery = useQuery(LIST_CATEGORIES_QUERY, {
-    variables: { limit: 5, filters: { orderBy: { field: CategoryOrderFieldEnum.TRANSACTIONS_COUNT } } },
-    refetchOn: { windowFocus: true },
+  const listMonthIncomeTransactionsQuery = useQuery(LIST_TRANSACTIONS_QUERY, {
+    variables: {
+      filters: {
+        startDate: format(startOfMonth(now), "yyyy-MM-dd"),
+        endDate: format(endOfMonth(now), "yyyy-MM-dd"),
+        type: TransactionTypeEnum.INCOME,
+      },
+    },
     fetchPolicy: "cache-and-network",
   });
 
-  const mostUsedCategories = mostUsedCategoriesQuery.data?.listCategories.items;
+  const listMonthExpenseTransactionsQuery = useQuery(LIST_TRANSACTIONS_QUERY, {
+    variables: {
+      filters: {
+        startDate: format(startOfMonth(now), "yyyy-MM-dd"),
+        endDate: format(endOfMonth(now), "yyyy-MM-dd"),
+        type: TransactionTypeEnum.EXPENSE,
+      },
+    },
+    fetchPolicy: "cache-and-network",
+  });
 
   const { listCategoriesQuery, loadMoreCategories } = usePaginatedCategoriesQuery();
 
   const [isOpenCreateDialog, setIsOpenCreateDialog] = useState<boolean>(false);
 
+  const totalBalance = listAllTransactionsQuery.data?.listTransactions.totalBalance;
+
+  const recentTransactions = listRecentTransactionsQuery.data?.listTransactions.items;
+
+  const monthTotalIncome = listMonthIncomeTransactionsQuery.data?.listTransactions.totalIncomeAmount;
+
+  const monthTotalExpenseAmount = listMonthIncomeTransactionsQuery.data?.listTransactions.totalExpenseAmount;
+
+  const mostUsedCategoriesQuery = useQuery(LIST_CATEGORIES_QUERY, {
+    variables: { limit: 5, filters: { orderBy: { field: CategoryOrderFieldEnum.TRANSACTIONS_COUNT } } },
+    fetchPolicy: "cache-and-network",
+  });
+
+  const mostUsedCategories = mostUsedCategoriesQuery.data?.listCategories.items;
+
+  const isLoadingInfos = listMonthExpenseTransactionsQuery.loading || listMonthExpenseTransactionsQuery.loading;
+
   return (
     <div className="space-y-6">
       <div className="grid gap-6 lg:grid-cols-3">
         <DashboardCard
+          isLoading={isLoadingInfos}
           variant="highlight"
           label="SALDO TOTAL"
-          value={formatCurrency(12847.32)}
+          value={formatCurrency(totalBalance || 0)}
           icon={"Wallet"}
           iconColor="var(--purple-base)"
         />
         <DashboardCard
+          isLoading={isLoadingInfos}
           variant="highlight"
           label="RECEITAS DO MÊS"
-          value={formatCurrency(4250.0)}
+          value={formatCurrency(monthTotalIncome || 0)}
           icon={"ArrowUpCircle"}
           iconColor="var(--primary)"
         />
         <DashboardCard
+          isLoading={isLoadingInfos}
           variant="highlight"
           label="DESPESAS DO MÊS"
-          value={formatCurrency(2180.45)}
-          icon={"WalletIcon"}
-          iconColor="var(--purple-base)"
+          value={formatCurrency(monthTotalExpenseAmount || 0)}
+          icon={"ArrowDownCircle"}
+          iconColor="var(--danger)"
         />
       </div>
 
@@ -172,7 +211,10 @@ export function DashboardPage() {
         listCategoriesQuery={listCategoriesQuery}
         loadMoreCategories={loadMoreCategories}
         onOpenChange={setIsOpenCreateDialog}
-        onSuccess={() => toast.success("Transação adicionada com sucesso")}
+        onSuccess={async () => {
+          await listRecentTransactionsQuery.refetch();
+          toast.success("Transação adicionada com sucesso");
+        }}
       />
     </div>
   );

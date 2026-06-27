@@ -9,7 +9,6 @@ export function usePaginatedCategoriesQuery() {
       page: 1,
       limit: PAGE_LIMIT,
     },
-    refetchOn: { windowFocus: true },
     fetchPolicy: "cache-and-network",
   });
 
