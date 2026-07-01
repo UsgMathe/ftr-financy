@@ -95,7 +95,7 @@ export function CategoriesPage() {
               isLoading={transactionsCountQuery.loading}
             />
 
-            {mostUsedCategory && (
+            {mostUsedCategory?.transactionsCount ? (
               <DashboardCard
                 icon={mostUsedCategory.icon}
                 value={mostUsedCategory?.title}
@@ -103,6 +103,8 @@ export function CategoriesPage() {
                 iconColor={mostUsedCategory?.color}
                 isLoading={mostUsedCategoriesQuery.loading}
               />
+            ) : (
+              ""
             )}
           </>
         )}
