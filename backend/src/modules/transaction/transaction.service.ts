@@ -112,6 +112,8 @@ export class TransactionService {
         }),
       ]);
 
+    console.log({ where, totalIncome });
+
     const totalIncomeAmount = Number(totalIncome._sum.amount ?? 0);
     const totalExpenseAmount = Number(totalExpense._sum.amount ?? 0);
 
@@ -138,6 +140,15 @@ export class TransactionService {
     data: UpdateTransactionInput,
   ) {
     await this.validateTransactionExists(userId, id);
+    if (data.categoryId) {
+      const foundCategory = await this.categoryService.validateCategoryExists(
+        userId,
+        data.categoryId,
+        false,
+      );
+
+      if (!foundCategory) throw new BadRequestError('Categoria não encontrada');
+    }
 
     return prismaClient.transaction.update({
       where: { id },
