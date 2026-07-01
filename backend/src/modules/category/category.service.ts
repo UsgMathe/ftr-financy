@@ -95,6 +95,7 @@ export class CategoryService {
       prismaClient.category.findMany({
         where,
         include: {
+          user: true,
           _count: {
             select: {
               transactions: true,
@@ -190,7 +191,7 @@ export class CategoryService {
       where: { categoryId: id },
     });
 
-    if (transactionsCount > 1) {
+    if (transactionsCount > 0) {
       throw new BadRequestError(
         'Não é possível excluir uma categoria que possui transaçãoes vinculadas.',
       );
