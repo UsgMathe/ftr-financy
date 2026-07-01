@@ -63,10 +63,10 @@ export class CategoryResolver {
     user: User,
 
     @Arg('page', () => Int, { defaultValue: 1, nullable: true })
-    page: number,
+    page?: number,
 
     @Arg('limit', () => Int, { defaultValue: 10, nullable: true })
-    limit: number,
+    limit?: number,
 
     @Arg('filters', () => ListCategoriesFilterInput, { nullable: true })
     filters?: ListCategoriesFilterInput,
