@@ -19,7 +19,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { LIST_CATEGORIES_QUERY } from "@/graphql/categories/categories.queries";
 import { CategoryOrderFieldEnum } from "@/graphql/categories/categories.types";
-import { TransactionTypeEnum } from "@/graphql/transactions/transaction.model";
 import { endOfMonth, format, startOfMonth } from "date-fns";
 import { CreateTransactionDialog } from "./transactions/components/create-transaction-dialog";
 
@@ -42,23 +41,11 @@ export function DashboardPage() {
     fetchPolicy: "cache-and-network",
   });
 
-  const listMonthIncomeTransactionsQuery = useQuery(LIST_TRANSACTIONS_QUERY, {
+  const listMonthTransactionsQuery = useQuery(LIST_TRANSACTIONS_QUERY, {
     variables: {
       filters: {
         startDate: format(startOfMonth(now), "yyyy-MM-dd"),
         endDate: format(endOfMonth(now), "yyyy-MM-dd"),
-        type: TransactionTypeEnum.INCOME,
-      },
-    },
-    fetchPolicy: "cache-and-network",
-  });
-
-  const listMonthExpenseTransactionsQuery = useQuery(LIST_TRANSACTIONS_QUERY, {
-    variables: {
-      filters: {
-        startDate: format(startOfMonth(now), "yyyy-MM-dd"),
-        endDate: format(endOfMonth(now), "yyyy-MM-dd"),
-        type: TransactionTypeEnum.EXPENSE,
       },
     },
     fetchPolicy: "cache-and-network",
@@ -72,9 +59,9 @@ export function DashboardPage() {
 
   const recentTransactions = listRecentTransactionsQuery.data?.listTransactions.items;
 
-  const monthTotalIncome = listMonthIncomeTransactionsQuery.data?.listTransactions.totalIncomeAmount;
+  const monthTotalIncome = listMonthTransactionsQuery.data?.listTransactions.totalIncomeAmount;
 
-  const monthTotalExpenseAmount = listMonthIncomeTransactionsQuery.data?.listTransactions.totalExpenseAmount;
+  const monthTotalExpenseAmount = listMonthTransactionsQuery.data?.listTransactions.totalExpenseAmount;
 
   const mostUsedCategoriesQuery = useQuery(LIST_CATEGORIES_QUERY, {
     variables: { limit: 5, filters: { orderBy: { field: CategoryOrderFieldEnum.TRANSACTIONS_COUNT } } },
@@ -83,7 +70,7 @@ export function DashboardPage() {
 
   const mostUsedCategories = mostUsedCategoriesQuery.data?.listCategories.items;
 
-  const isLoadingInfos = listMonthExpenseTransactionsQuery.loading || listMonthExpenseTransactionsQuery.loading;
+  const isLoadingInfos = listMonthTransactionsQuery.loading;
 
   return (
     <div className="space-y-6">
@@ -139,7 +126,7 @@ export function DashboardPage() {
                     />
                     <div>
                       <p className="text-base font-medium">{transaction.description}</p>
-                      <p className="text-muted-foreground text-sm">{transaction.date}</p>
+                      <p className="text-muted-foreground text-sm">{format(transaction.date, "dd/MM/yyyy")}</p>
                     </div>
                   </div>
 
