@@ -1,6 +1,6 @@
 import { createParameterDecorator, ResolverData } from 'type-graphql';
 
-import { User } from '@/generated/prisma/browser';
+import { User } from '@/generated/prisma/client';
 import { prismaClient } from '@/prisma/prisma.client';
 import { UnauthorizedError } from '@/shared/errors/unauthorized.error';
 import { GraphqlContext } from '../graphql.context';

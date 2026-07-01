@@ -1,6 +1,6 @@
 import { Arg, Mutation, Query, Resolver, UseMiddleware } from 'type-graphql';
 
-import { User } from '@/generated/prisma/browser';
+import { User } from '@/generated/prisma/client';
 import { GqlUser } from '@/graphql/decorators/user.decorator';
 import { IsAuth } from '@/shared/middlewares/is-auth.middleware';
 import { UserModel } from '../auth/models/user.model';

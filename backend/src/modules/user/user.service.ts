@@ -1,4 +1,4 @@
-import { User } from '@/generated/prisma/browser';
+import { User } from '@/generated/prisma/client';
 import { prismaClient } from '@/prisma/prisma.client';
 import { ConflictError } from '@/shared/errors/conflict.error';
 import { UnauthorizedError } from '@/shared/errors/unauthorized.error';
@@ -31,10 +31,6 @@ export class UserService {
     return user;
   }
 
-  async listUsers() {
-    return prismaClient.user.findMany();
-  }
-
   async updateUser(userId: User['id'], data: UpdateUserInput) {
     await this.validateUserExists(userId);
 
@@ -44,16 +40,6 @@ export class UserService {
         name: data.name,
       },
     });
-  }
-
-  async deleteUser(id: string) {
-    await this.validateUserExists(id);
-
-    await prismaClient.user.delete({
-      where: { id },
-    });
-
-    return true;
   }
 
   private async validateUserExists(id: string) {
