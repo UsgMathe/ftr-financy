@@ -28,7 +28,7 @@ export function DashboardCard({ value, label, icon, iconColor, variant = "defaul
 
             <div className="space-y-1">
               {isLoading ? <Skeleton className="h-8 w-full" /> : <p className="text-[28px] font-bold">{value}</p>}
-              <p className="text-muted-foreground uppercaser text-xs font-medium tracking-wide">{label}</p>
+              <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">{label}</p>
             </div>
           </>
         ) : (

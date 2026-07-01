@@ -1,7 +1,7 @@
 import { LogOutIcon, MailIcon, User2Icon } from "lucide-react";
 import { useForm } from "react-hook-form";
 
-import { updateUserSchema, type UpdateUserInput } from "@/schemas/user/user.schama";
+import { updateUserSchema, type UpdateUserInput } from "@/schemas/user/user.schema";
 import { useAuthStore } from "@/stores/auth.store";
 import { getInitials } from "@/utils/get-initials";
 

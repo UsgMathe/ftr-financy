@@ -1,5 +1,5 @@
 import type { UserModel } from "@/graphql/users/user.model";
-import type { UpdateUserInput } from "@/schemas/user/user.schama";
+import type { UpdateUserInput } from "@/schemas/user/user.schema";
 
 export interface GetUserQueryData {
   getUser: UserModel;

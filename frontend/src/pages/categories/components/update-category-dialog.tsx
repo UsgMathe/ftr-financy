@@ -42,13 +42,13 @@ export function UpdateCategoryDialog({ category, open, onOpenChange, onSuccess, 
     form.reset();
   };
 
-  const [upateCategoryMutation] = useMutation(UPDATE_CATEGORY_MUTATION);
+  const [updateCategoryMutation] = useMutation(UPDATE_CATEGORY_MUTATION);
 
   const handleUpdateCategory = async (data: UpdateCategoryInput) => {
     if (!category) return;
 
     try {
-      const result = await upateCategoryMutation({ variables: { categoryId: category.id, data } });
+      const result = await updateCategoryMutation({ variables: { categoryId: category.id, data } });
       onSuccess?.(result.data?.updateCategory);
       handleOpenChange(false);
       form.reset();

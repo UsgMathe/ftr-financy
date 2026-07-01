@@ -35,7 +35,7 @@ export function CategoriesPage() {
     fetchPolicy: "cache-and-network",
   });
 
-  const mostUserdCategoriesQuery = useQuery(LIST_CATEGORIES_QUERY, {
+  const mostUsedCategoriesQuery = useQuery(LIST_CATEGORIES_QUERY, {
     variables: {
       limit: 1,
       filters: { orderBy: { field: CategoryOrderFieldEnum.TRANSACTIONS_COUNT, direction: OrderDirectionEnum.DESC } },
@@ -48,7 +48,7 @@ export function CategoriesPage() {
     fetchPolicy: "cache-and-network",
   });
 
-  const mostUsedCategory = mostUserdCategoriesQuery.data?.listCategories.items[0];
+  const mostUsedCategory = mostUsedCategoriesQuery.data?.listCategories.items[0];
 
   const isFirstLoading = listCategoriesQuery.loading && !listCategoriesQuery.previousData;
   const isFetching = listCategoriesQuery.loading && !!listCategoriesQuery.previousData;
@@ -101,7 +101,7 @@ export function CategoriesPage() {
                 value={mostUsedCategory?.title}
                 label="CATEGORIA MAIS UTILIZADA"
                 iconColor={mostUsedCategory?.color}
-                isLoading={mostUserdCategoriesQuery.loading}
+                isLoading={mostUsedCategoriesQuery.loading}
               />
             )}
           </>
