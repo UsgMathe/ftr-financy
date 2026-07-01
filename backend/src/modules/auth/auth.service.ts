@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 
 import { AUTH_COOKIE_OPTIONS } from '@/constants/cookies.constants';
-import { User } from '@/generated/prisma/browser';
+import { User } from '@/generated/prisma/client';
 import { GraphqlContext } from '@/graphql/graphql.context';
 import { UnauthorizedError } from '@/shared/errors/unauthorized.error';
 import { setAuthCookies } from '@/shared/utils/cookies.utils';
@@ -36,7 +36,7 @@ export class AuthService {
     const tokens = this.generateTokens(foundUser);
 
     setAuthCookies(res, {
-      token: tokens.token,
+      accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
     });
 
@@ -51,33 +51,35 @@ export class AuthService {
   }
 
   private generateTokens(user: User): SigninOutput {
-    const token = jwtSign(
+    const accessToken = jwtSign(
       { id: user.id, email: user.email, name: user.name },
-      'token',
+      'acessToken',
     );
     const refreshToken = jwtSign(
       { id: user.id, email: user.email, name: user.name },
       'refreshToken',
     );
 
-    return { token, refreshToken, user };
+    return { accessToken, refreshToken, user };
   }
 
   async authenticateRequest(req: Request, res: Response) {
     const authHeader = req.headers.authorization;
 
     let user: string | undefined;
-    let token: string | undefined = req.cookies?.token;
+    let accessToken: string | undefined =
+      req.cookies?.[AUTH_COOKIE_OPTIONS.ACCESS_TOKEN.NAME];
 
-    if (!token && authHeader?.startsWith('Bearer ')) {
-      token = authHeader.substring('Bearer '.length);
+    if (!accessToken && authHeader?.startsWith('Bearer ')) {
+      accessToken = authHeader.substring('Bearer '.length);
     }
 
-    let refreshToken: string | undefined = req.cookies?.refreshToken;
+    let refreshToken: string | undefined =
+      req.cookies?.[AUTH_COOKIE_OPTIONS.REFRESH_TOKEN.NAME];
 
-    if (token) {
+    if (accessToken) {
       try {
-        const payload = verifyJwt(token);
+        const payload = verifyJwt(accessToken);
         user = payload.id;
       } catch (error) {}
     }
@@ -87,13 +89,13 @@ export class AuthService {
         const payload = verifyJwt(refreshToken);
         user = payload.id;
 
-        token = jwtSign(
+        accessToken = jwtSign(
           {
             id: payload.id,
             email: payload.email,
             name: payload.name,
           },
-          'token',
+          'acessToken',
         );
 
         refreshToken = jwtSign(
@@ -105,13 +107,13 @@ export class AuthService {
           'refreshToken',
         );
 
-        setAuthCookies(res, { token, refreshToken });
+        setAuthCookies(res, { accessToken: accessToken, refreshToken });
       } catch (error) {
         res.clearCookie(AUTH_COOKIE_OPTIONS.ACCESS_TOKEN.NAME);
         res.clearCookie(AUTH_COOKIE_OPTIONS.REFRESH_TOKEN.NAME);
       }
     }
 
-    return { user, token };
+    return { user, accessToken };
   }
 }

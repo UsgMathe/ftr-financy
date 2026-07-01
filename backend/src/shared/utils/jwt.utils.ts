@@ -2,21 +2,21 @@ import {
   JWT_REFRESH_TOKEN_EXPIRES_IN,
   JWT_TOKEN_EXPIRES_IN,
 } from '@/constants/jwt.constants';
-import { User } from '@/generated/prisma/browser';
+import { User } from '@/generated/prisma/client';
 import jwt, { Secret, SignOptions } from 'jsonwebtoken';
 
 export type JwtPayload = Pick<User, 'id' | 'name' | 'email'>;
 
 export const jwtSign = (
   payload: JwtPayload,
-  type: 'token' | 'refreshToken',
+  type: 'acessToken' | 'refreshToken',
 ) => {
   const secret: Secret = process.env.JWT_SECRET!;
 
   let expiresIn: SignOptions['expiresIn'];
 
   switch (type) {
-    case 'token':
+    case 'acessToken':
       expiresIn = JWT_TOKEN_EXPIRES_IN;
       break;
     case 'refreshToken':

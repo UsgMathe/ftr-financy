@@ -3,7 +3,7 @@ import { CookieOptions, Response } from 'express';
 
 export function setAuthCookies(
   res: Response,
-  tokens: { token: string; refreshToken: string },
+  tokens: { accessToken: string; refreshToken: string },
 ) {
   const isProd = process.env.NODE_ENV === 'production';
 
@@ -13,7 +13,7 @@ export function setAuthCookies(
     sameSite: isProd ? 'none' : 'lax',
   };
 
-  res.cookie(AUTH_COOKIE_OPTIONS.ACCESS_TOKEN.NAME, tokens.token, {
+  res.cookie(AUTH_COOKIE_OPTIONS.ACCESS_TOKEN.NAME, tokens.accessToken, {
     ...cookieConfig,
     maxAge: AUTH_COOKIE_OPTIONS.ACCESS_TOKEN.MAX_AGE,
   });

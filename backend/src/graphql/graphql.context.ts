@@ -3,7 +3,7 @@ import { ExpressContextFunctionArgument } from '@as-integrations/express5';
 
 export type GraphqlContext = {
   user: string | undefined;
-  token: string | undefined;
+  accessToken: string | undefined;
   req: ExpressContextFunctionArgument['req'];
   res: ExpressContextFunctionArgument['res'];
 };
@@ -14,7 +14,7 @@ export const buildContext = async ({
   req,
   res,
 }: ExpressContextFunctionArgument): Promise<GraphqlContext> => {
-  const { user, token } = await authService.authenticateRequest(req, res);
+  const { user, accessToken } = await authService.authenticateRequest(req, res);
 
-  return { user, token, req, res };
+  return { user, accessToken, req, res };
 };

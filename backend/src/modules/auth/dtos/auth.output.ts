@@ -1,11 +1,11 @@
-import { Field, ObjectType } from "type-graphql";
+import { Field, ObjectType } from 'type-graphql';
 
-import { UserModel } from "../models/user.model";
+import { UserModel } from '../models/user.model';
 
 @ObjectType()
 export abstract class AuthOutput {
   @Field(() => String)
-  token!: string;
+  accessToken!: string;
 
   @Field(() => String)
   refreshToken!: string;

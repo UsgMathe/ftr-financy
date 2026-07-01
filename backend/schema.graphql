@@ -134,8 +134,8 @@ input SigninInput {
 }
 
 type SigninOutput {
+  accessToken: String!
   refreshToken: String!
-  token: String!
   user: UserModel!
 }
 
