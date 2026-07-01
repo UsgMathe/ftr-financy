@@ -10,13 +10,9 @@ export const signupSchema = z.object({
 
   email: z.email("O email deve ser válido"),
 
-  password: z.string("A senha é obrigatória").min(6, "A senha deve ter no mínimo 8 caracteres"),
+  password: z.string("A senha é obrigatória").min(8, "A senha deve ter no mínimo 8 caracteres"),
 });
 
 export type SignupInput = z.input<typeof signupSchema>;
 
-export type SignupOutput = {
-  token: string;
-  refreshToken: string;
-  user: UserModel;
-};
+export type SignupOutput = UserModel;

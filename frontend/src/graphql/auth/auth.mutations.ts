@@ -23,7 +23,6 @@ export const SIGNUP_MUTATION: TypedDocumentNode<SignupMutationData, SignupMutati
 export const SIGNIN_MUTATION: TypedDocumentNode<SigninMutationData, SigninMutationVariables> = gql`
   mutation Signin($data: SigninInput!) {
     signin(data: $data) {
-      token
       refreshToken
       user {
         id
